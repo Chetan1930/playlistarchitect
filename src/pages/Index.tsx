@@ -1,12 +1,62 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import Header from '@/components/Header';
+import SkillsList from '@/components/SkillsList';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <main className="container mx-auto px-6 pt-24 pb-16">
+        <section className="mb-16">
+          <div className="max-w-3xl mx-auto text-center py-12">
+            <h1 className="text-4xl font-medium text-gray-900 mb-4 leading-tight">
+              Organize your learning journey
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              Create personalized learning paths by organizing your favorite courses and playlists
+            </p>
+            <div className="inline-flex items-center justify-center px-6 py-3 bg-gray-900 text-white rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gray-800">
+              Get Started
+            </div>
+          </div>
+        </section>
+        
+        <SkillsList />
+      </main>
+      
+      <footer className="mt-auto py-8 bg-white border-t border-gray-100">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0">
+              <p className="text-sm text-gray-500">
+                © {new Date().getFullYear()} CourseTrack. All rights reserved.
+              </p>
+            </div>
+            
+            <div className="flex space-x-6">
+              <a 
+                href="#" 
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Terms
+              </a>
+              <a 
+                href="#" 
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Privacy
+              </a>
+              <a 
+                href="#" 
+                className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
