@@ -8,14 +8,13 @@ import AddPlaylistForm from './AddPlaylistForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface PlaylistManagerProps {
   skillId: string;
 }
 
 const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   const { 
@@ -50,6 +49,9 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
     
     if (success) {
       refetch();
+      toast.success("Playlist order updated");
+    } else {
+      toast.error("Failed to update playlist order");
     }
   };
   
@@ -58,6 +60,9 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
     
     if (success) {
       refetch();
+      toast.success("Playlist removed");
+    } else {
+      toast.error("Failed to remove playlist");
     }
   };
   

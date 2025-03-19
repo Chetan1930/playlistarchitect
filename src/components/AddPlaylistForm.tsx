@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/utils/api';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 interface AddPlaylistFormProps {
   skillId: string;
@@ -13,7 +13,6 @@ interface AddPlaylistFormProps {
 const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,24 +26,13 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
       if (result) {
         setUrl('');
         onSuccess();
-        toast({
-          title: "Playlist added",
-          description: "Your new playlist has been added successfully.",
-        });
+        toast.success("Playlist added successfully");
       } else {
-        toast({
-          title: "Error",
-          description: "Failed to add playlist. Please check the URL and try again.",
-          variant: "destructive",
-        });
+        toast.error("Failed to add playlist. Please check the URL and try again.");
       }
     } catch (error) {
       console.error('Error adding playlist:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }

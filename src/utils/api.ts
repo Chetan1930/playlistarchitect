@@ -22,25 +22,27 @@ const generateId = (): string => {
 
 // Fetch YouTube video details
 export const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
-  // This would be a real API call in a production app
-  // For demo purposes, we'll simulate a response
-  
   try {
     // Extract video ID from URL
     let videoId = '';
     
+    // Handle different YouTube URL formats
     if (url.includes('youtube.com/watch')) {
       const urlObj = new URL(url);
       videoId = urlObj.searchParams.get('v') || '';
     } else if (url.includes('youtu.be/')) {
       videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
+    } else if (url.includes('youtube.com/playlist')) {
+      const urlObj = new URL(url);
+      videoId = urlObj.searchParams.get('list') || '';
     }
     
-    if (!videoId) return null;
+    if (!videoId) {
+      console.log('Could not extract valid YouTube ID from URL:', url);
+      return null;
+    }
     
-    // Simulate API response
-    // In a real app, you would use the YouTube API
-    console.log(`Fetching details for video ID: ${videoId}`);
+    console.log(`Fetching details for video/playlist ID: ${videoId}`);
     
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 500));
