@@ -8,7 +8,7 @@ import AddPlaylistForm from './AddPlaylistForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlaylistManagerProps {
   skillId: string;

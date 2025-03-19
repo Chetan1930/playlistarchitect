@@ -4,7 +4,7 @@ import { Playlist } from '@/utils/types';
 import { Button } from '@/components/ui/button';
 import { ArrowUp, ArrowDown, Trash } from 'lucide-react';
 import { api } from '@/utils/api';
-import { useToast } from '@/components/ui/toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface PlaylistItemProps {
   playlist: Playlist;
