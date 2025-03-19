@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/utils/api';
@@ -7,10 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const SkillsList = () => {
-  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -28,23 +28,16 @@ const SkillsList = () => {
     setIsSubmitting(true);
     
     try {
-      await api.createSkill(name, description);
+      await api.createSkill(name, description || 'Created by Chetan Chauhan');
       setOpen(false);
       setName('');
       setDescription('');
       refetch();
       
-      toast({
-        title: "Skill created",
-        description: "Your new skill has been added successfully.",
-      });
+      toast.success("Skill created successfully");
     } catch (error) {
       console.error(error);
-      toast({
-        title: "Error",
-        description: "Failed to create skill. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Failed to create skill. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +87,7 @@ const SkillsList = () => {
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No skills yet</h3>
           <p className="text-sm text-gray-500 text-center max-w-md mb-6">
-            Start your learning journey by adding your first skill or topic you want to learn
+            Start your learning journey created by Chetan Chauhan by adding your first skill or topic
           </p>
           <Button 
             onClick={() => setOpen(true)}

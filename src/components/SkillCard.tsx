@@ -14,9 +14,9 @@ const SkillCard = ({ skill }: SkillCardProps) => {
       to={`/skill/${skill.id}`}
       className="group transition-all duration-300 flex flex-col h-full overflow-hidden bg-white hover:bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md animate-scale will-change-transform"
     >
-      <div className="w-full h-40 overflow-hidden">
+      <div className="w-full h-48 overflow-hidden">
         <img 
-          src={skill.thumbnailUrl || "https://source.unsplash.com/random/300x200?code"} 
+          src={skill.thumbnailUrl || `https://source.unsplash.com/random/800x600?${encodeURIComponent(skill.name.toLowerCase())}`} 
           alt={skill.name}
           className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
           loading="lazy"

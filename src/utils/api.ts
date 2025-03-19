@@ -1,4 +1,3 @@
-
 import { Skill, Playlist } from './types';
 
 // Simulating a database with localStorage
@@ -44,10 +43,16 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
     
     console.log(`Fetching details for video/playlist ID: ${videoId}`);
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Get a relevant thumbnail based on the URL contents
+    const keywords = url.toLowerCase().includes('javascript') ? 'javascript' :
+                    url.toLowerCase().includes('python') ? 'python' :
+                    url.toLowerCase().includes('design') ? 'design' :
+                    url.toLowerCase().includes('data') ? 'data' :
+                    url.toLowerCase().includes('web') ? 'web' : 'coding';
     
-    // Return mock data
+    const thumbnailUrl = `https://source.unsplash.com/random/640x360?${keywords}`;
+    
+    // Return data
     const randomIndex = Math.floor(Math.random() * 5);
     const titles = [
       "Learn Web Development Basics",
@@ -65,17 +70,9 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
       "Explore the principles of great UI/UX design in this detailed course."
     ];
     
-    const thumbnails = [
-      `https://source.unsplash.com/random/640x360?web`,
-      `https://source.unsplash.com/random/640x360?coding`,
-      `https://source.unsplash.com/random/640x360?javascript`,
-      `https://source.unsplash.com/random/640x360?algorithm`,
-      `https://source.unsplash.com/random/640x360?design`,
-    ];
-    
     return {
       title: titles[randomIndex],
-      thumbnailUrl: thumbnails[randomIndex],
+      thumbnailUrl,
       description: descriptions[randomIndex]
     };
   } catch (error) {
@@ -104,12 +101,16 @@ export const api = {
     await new Promise(resolve => setTimeout(resolve, 500));
     const skills = getData();
     
+    // Generate a relevant thumbnail based on the skill name
+    const keywords = name.toLowerCase().split(' ').join('+');
+    const thumbnailUrl = `https://source.unsplash.com/random/800x600?${keywords}`;
+    
     const newSkill: Skill = {
       id: generateId(),
       name,
-      description,
+      description: description || `Created by Chetan Chauhan`,
       playlists: [],
-      thumbnailUrl: `https://source.unsplash.com/random/300x200?${encodeURIComponent(name.toLowerCase())}`,
+      thumbnailUrl,
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -146,33 +147,47 @@ export const api = {
   // Playlists
   addPlaylist: async (skillId: string, playlistUrl: string): Promise<Playlist | null> => {
     await new Promise(resolve => setTimeout(resolve, 600));
-    const skills = getData();
-    const skillIndex = skills.findIndex(s => s.id === skillId);
     
-    if (skillIndex === -1) return null;
-    
-    // Get video details (title, thumbnail, etc.)
-    const details = await fetchYouTubeDetails(playlistUrl);
-    
-    if (!details) return null;
-    
-    // Calculate next position
-    const nextPosition = skills[skillIndex].playlists.length;
-    
-    const newPlaylist: Playlist = {
-      id: generateId(),
-      title: details.title,
-      url: playlistUrl,
-      thumbnailUrl: details.thumbnailUrl,
-      description: details.description,
-      position: nextPosition
-    };
-    
-    skills[skillIndex].playlists.push(newPlaylist);
-    skills[skillIndex].updatedAt = new Date();
-    saveData(skills);
-    
-    return newPlaylist;
+    try {
+      const skills = getData();
+      const skillIndex = skills.findIndex(s => s.id === skillId);
+      
+      if (skillIndex === -1) {
+        console.error(`Skill with ID ${skillId} not found`);
+        return null;
+      }
+      
+      // Get video details (title, thumbnail, etc.)
+      const details = await fetchYouTubeDetails(playlistUrl);
+      
+      if (!details) {
+        console.error('Failed to fetch playlist details');
+        return null;
+      }
+      
+      // Calculate next position
+      const nextPosition = skills[skillIndex].playlists.length;
+      
+      const newPlaylist: Playlist = {
+        id: generateId(),
+        title: details.title,
+        url: playlistUrl,
+        thumbnailUrl: details.thumbnailUrl,
+        description: details.description,
+        position: nextPosition
+      };
+      
+      console.log('Adding new playlist:', newPlaylist);
+      
+      skills[skillIndex].playlists.push(newPlaylist);
+      skills[skillIndex].updatedAt = new Date();
+      saveData(skills);
+      
+      return newPlaylist;
+    } catch (error) {
+      console.error('Error adding playlist:', error);
+      return null;
+    }
   },
   
   updatePlaylistPosition: async (skillId: string, playlistId: string, newPosition: number): Promise<boolean> => {

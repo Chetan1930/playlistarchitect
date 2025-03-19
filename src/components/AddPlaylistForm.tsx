@@ -21,13 +21,18 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
     setIsLoading(true);
     
     try {
+      // Log the url and skillId for debugging
+      console.log(`Adding playlist: ${url} to skill: ${skillId}`);
+      
       const result = await api.addPlaylist(skillId, url);
       
       if (result) {
+        console.log('Playlist added successfully:', result);
         setUrl('');
         onSuccess();
         toast.success("Playlist added successfully");
       } else {
+        console.error('Failed to add playlist, result was null');
         toast.error("Failed to add playlist. Please check the URL and try again.");
       }
     } catch (error) {
