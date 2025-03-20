@@ -1,3 +1,4 @@
+
 import { Skill, Playlist } from './types';
 
 // Simulating a database with localStorage
@@ -17,6 +18,53 @@ const saveData = (data: Skill[]): void => {
 // Generate random ID
 const generateId = (): string => {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+};
+
+// Get a relevant image based on keywords
+const getRelevantImage = (keyword: string): string => {
+  // Collection of high-quality educational images
+  const imageOptions = [
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop",  // tech setup
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop",  // coding
+    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&auto=format&fit=crop",  // laptop
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop",  // circuit
+    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&auto=format&fit=crop",  // study
+  ];
+  
+  // Simple mapping of keywords to images
+  const keywordMap: Record<string, number> = {
+    javascript: 2,
+    python: 1,
+    web: 0,
+    design: 4,
+    development: 0,
+    programming: 1,
+    data: 3,
+    machine: 3,
+    learning: 4,
+    ai: 3,
+    frontend: 0,
+    backend: 1,
+    fullstack: 2,
+    database: 3,
+    cloud: 3,
+    mobile: 0,
+    game: 2,
+    security: 3,
+    devops: 1,
+    testing: 0,
+  };
+  
+  // Find matching keywords
+  const lowerKeyword = keyword.toLowerCase();
+  for (const [key, index] of Object.entries(keywordMap)) {
+    if (lowerKeyword.includes(key)) {
+      return imageOptions[index];
+    }
+  }
+  
+  // Default to a random image if no keyword matches
+  return imageOptions[Math.floor(Math.random() * imageOptions.length)];
 };
 
 // Fetch YouTube video details
@@ -43,14 +91,15 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
     
     console.log(`Fetching details for video/playlist ID: ${videoId}`);
     
-    // Get a relevant thumbnail based on the URL contents
-    const keywords = url.toLowerCase().includes('javascript') ? 'javascript' :
-                    url.toLowerCase().includes('python') ? 'python' :
-                    url.toLowerCase().includes('design') ? 'design' :
-                    url.toLowerCase().includes('data') ? 'data' :
-                    url.toLowerCase().includes('web') ? 'web' : 'coding';
+    // Extract topic from URL for better image selection
+    const urlLower = url.toLowerCase();
+    let keywords = urlLower.includes('javascript') ? 'javascript' :
+                   urlLower.includes('python') ? 'python' :
+                   urlLower.includes('design') ? 'design' :
+                   urlLower.includes('data') ? 'data' :
+                   urlLower.includes('web') ? 'web' : 'coding';
     
-    const thumbnailUrl = `https://source.unsplash.com/random/640x360?${keywords}`;
+    const thumbnailUrl = getRelevantImage(keywords);
     
     // Return data
     const randomIndex = Math.floor(Math.random() * 5);
@@ -102,8 +151,7 @@ export const api = {
     const skills = getData();
     
     // Generate a relevant thumbnail based on the skill name
-    const keywords = name.toLowerCase().split(' ').join('+');
-    const thumbnailUrl = `https://source.unsplash.com/random/800x600?${keywords}`;
+    const thumbnailUrl = getRelevantImage(name);
     
     const newSkill: Skill = {
       id: generateId(),
@@ -188,6 +236,25 @@ export const api = {
       console.error('Error adding playlist:', error);
       return null;
     }
+  },
+  
+  updatePlaylistTitle: async (skillId: string, playlistId: string, newTitle: string): Promise<boolean> => {
+    await new Promise(resolve => setTimeout(resolve, 300));
+    const skills = getData();
+    const skillIndex = skills.findIndex(s => s.id === skillId);
+    
+    if (skillIndex === -1) return false;
+    
+    const { playlists } = skills[skillIndex];
+    const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+    
+    if (playlistIndex === -1) return false;
+    
+    playlists[playlistIndex].title = newTitle;
+    skills[skillIndex].updatedAt = new Date();
+    saveData(skills);
+    
+    return true;
   },
   
   updatePlaylistPosition: async (skillId: string, playlistId: string, newPosition: number): Promise<boolean> => {

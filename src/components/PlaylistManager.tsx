@@ -71,6 +71,11 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
     queryClient.invalidateQueries({ queryKey: ['skills'] });
   };
   
+  const handlePlaylistUpdated = () => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['skills'] });
+  };
+  
   if (isLoading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -143,6 +148,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
                   isLast={index === skill.playlists.length - 1}
                   onMove={handleMovePlaylist}
                   onDelete={handleDeletePlaylist}
+                  onUpdate={handlePlaylistUpdated}
                 />
               ))}
           </div>
