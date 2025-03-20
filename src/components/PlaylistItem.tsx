@@ -12,7 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { api } from '@/utils/api';
-import { MoreVertical, ArrowUp, ArrowDown, Trash2, Edit, CheckCircle } from 'lucide-react';
+import { MoreVertical, ArrowUp, ArrowDown, Trash2, Edit, CheckCircle, GripVertical } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import type { DraggableProvidedDragHandleProps } from 'react-beautiful-dnd';
 
 export interface PlaylistItemProps {
   playlist: Playlist;
@@ -31,6 +32,7 @@ export interface PlaylistItemProps {
   onDelete: (playlistId: string) => Promise<void>;
   onUpdate: () => void;
   onUpdateTitle: (playlistId: string, newTitle: string) => Promise<void>;
+  dragHandleProps?: DraggableProvidedDragHandleProps | null;
 }
 
 const PlaylistItem = ({
@@ -42,6 +44,7 @@ const PlaylistItem = ({
   onDelete,
   onUpdate,
   onUpdateTitle,
+  dragHandleProps,
 }: PlaylistItemProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(playlist.title);
@@ -73,13 +76,21 @@ const PlaylistItem = ({
   };
 
   return (
-    <div className="relative pl-12 pr-4 py-3 border-b border-gray-100 last:border-none hover:bg-gray-50 transition-colors duration-300 animate-fade-in">
+    <div className="relative pl-12 pr-4 py-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors duration-300 animate-fade-in group">
       <div className="absolute left-4 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-medium text-sm shadow-md">
         {playlist.position + 1}
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex-1 flex items-center">
+          {dragHandleProps && (
+            <div 
+              {...dragHandleProps} 
+              className="mr-2 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-100 transition-opacity p-1"
+            >
+              <GripVertical size={16} />
+            </div>
+          )}
           <a
             href={playlist.url}
             target="_blank"

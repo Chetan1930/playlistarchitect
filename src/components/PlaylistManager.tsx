@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/api';
@@ -9,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface PlaylistManagerProps {
   skillId: string;
@@ -45,6 +45,28 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
       skillId,
       playlistId,
       newPosition
+    );
+    
+    if (success) {
+      refetch();
+      toast.success("Playlist order updated");
+    } else {
+      toast.error("Failed to update playlist order");
+    }
+  };
+  
+  const handleDragEnd = async (result: DropResult) => {
+    if (!skill || !result.destination) return;
+    
+    const { source, destination } = result;
+    
+    if (source.index === destination.index) return;
+    
+    const playlistId = skill.playlists[source.index].id;
+    const success = await api.updatePlaylistPosition(
+      skillId,
+      playlistId,
+      destination.index
     );
     
     if (success) {
@@ -147,23 +169,48 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {skill.playlists
-              .sort((a, b) => a.position - b.position)
-              .map((playlist, index) => (
-                <PlaylistItem
-                  key={playlist.id}
-                  playlist={playlist}
-                  skillId={skillId}
-                  isFirst={index === 0}
-                  isLast={index === skill.playlists.length - 1}
-                  onMove={handleMovePlaylist}
-                  onDelete={handleDeletePlaylist}
-                  onUpdate={handlePlaylistUpdated}
-                  onUpdateTitle={handleUpdatePlaylistTitle}
-                />
-              ))}
-          </div>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="playlists">
+              {(provided) => (
+                <div 
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-4"
+                >
+                  {skill.playlists
+                    .sort((a, b) => a.position - b.position)
+                    .map((playlist, index) => (
+                      <Draggable 
+                        key={playlist.id} 
+                        draggableId={playlist.id} 
+                        index={index}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`transition-all duration-150 ${snapshot.isDragging ? 'shadow-lg scale-102' : ''}`}
+                          >
+                            <PlaylistItem
+                              playlist={playlist}
+                              skillId={skillId}
+                              isFirst={index === 0}
+                              isLast={index === skill.playlists.length - 1}
+                              onMove={handleMovePlaylist}
+                              onDelete={handleDeletePlaylist}
+                              onUpdate={handlePlaylistUpdated}
+                              onUpdateTitle={handleUpdatePlaylistTitle}
+                              dragHandleProps={provided.dragHandleProps}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         )}
       </div>
     </div>
