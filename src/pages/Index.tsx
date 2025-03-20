@@ -5,7 +5,7 @@ import SkillsList from '@/components/SkillsList';
 import { api } from '@/utils/api';
 
 const Index = () => {
-  const { data: skills = [] } = useQuery({
+  const { data: skills = [], isLoading } = useQuery({
     queryKey: ['skills'],
     queryFn: api.getSkills,
   });
@@ -17,7 +17,7 @@ const Index = () => {
       <Header />
       
       <main className="container mx-auto px-6 pt-24 pb-16">
-        {!hasSkills && (
+        {!hasSkills && !isLoading && (
           <section className="mb-16">
             <div className="max-w-3xl mx-auto text-center py-12">
               <h1 className="text-4xl font-medium text-gray-900 mb-4 leading-tight">

@@ -7,12 +7,23 @@ const SKILLS_KEY = 'course_skills';
 // Helper to get data from localStorage
 const getData = (): Skill[] => {
   const data = localStorage.getItem(SKILLS_KEY);
-  return data ? JSON.parse(data) : [];
+  if (!data) return [];
+  
+  try {
+    return JSON.parse(data);
+  } catch (e) {
+    console.error("Error parsing stored data:", e);
+    return [];
+  }
 };
 
 // Helper to save data to localStorage
 const saveData = (data: Skill[]): void => {
-  localStorage.setItem(SKILLS_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(SKILLS_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error("Error saving data to localStorage:", e);
+  }
 };
 
 // Generate random ID
@@ -86,7 +97,12 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
     
     if (!videoId) {
       console.log('Could not extract valid YouTube ID from URL:', url);
-      return null;
+      // Return a default object even if we can't extract the video ID
+      return {
+        title: "Learning Resource",
+        thumbnailUrl: getRelevantImage("learning"),
+        description: "A learning resource added to your collection."
+      };
     }
     
     console.log(`Fetching details for video/playlist ID: ${videoId}`);
@@ -126,7 +142,12 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
     };
   } catch (error) {
     console.error('Error fetching video details:', error);
-    return null;
+    // Return a fallback object in case of errors
+    return {
+      title: "Learning Resource",
+      thumbnailUrl: getRelevantImage("learning"),
+      description: "A learning resource added to your collection."
+    };
   }
 };
 
@@ -136,60 +157,91 @@ export const api = {
   getSkills: async (): Promise<Skill[]> => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 300));
-    return getData();
+    try {
+      const skills = getData();
+      console.log("Retrieved skills:", skills.length);
+      return skills;
+    } catch (error) {
+      console.error("Error getting skills:", error);
+      return [];
+    }
   },
   
   getSkill: async (id: string): Promise<Skill | null> => {
     await new Promise(resolve => setTimeout(resolve, 200));
-    const skills = getData();
-    const skill = skills.find(s => s.id === id);
-    return skill || null;
+    try {
+      const skills = getData();
+      const skill = skills.find(s => s.id === id);
+      console.log(`Retrieved skill ${id}:`, skill ? "found" : "not found");
+      return skill || null;
+    } catch (error) {
+      console.error(`Error getting skill ${id}:`, error);
+      return null;
+    }
   },
   
   createSkill: async (name: string, description: string): Promise<Skill> => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    const skills = getData();
-    
-    // Generate a relevant thumbnail based on the skill name
-    const thumbnailUrl = getRelevantImage(name);
-    
-    const newSkill: Skill = {
-      id: generateId(),
-      name,
-      description: description || `Created by Chetan Chauhan`,
-      playlists: [],
-      thumbnailUrl,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    
-    skills.push(newSkill);
-    saveData(skills);
-    return newSkill;
+    try {
+      const skills = getData();
+      
+      // Generate a relevant thumbnail based on the skill name
+      const thumbnailUrl = getRelevantImage(name);
+      
+      const newSkill: Skill = {
+        id: generateId(),
+        name,
+        description: description || `Created by Chetan Chauhan`,
+        playlists: [],
+        thumbnailUrl,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      skills.push(newSkill);
+      saveData(skills);
+      console.log("Created new skill:", newSkill.name);
+      return newSkill;
+    } catch (error) {
+      console.error("Error creating skill:", error);
+      throw error;
+    }
   },
   
   updateSkill: async (id: string, updates: Partial<Skill>): Promise<Skill | null> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const skills = getData();
-    const index = skills.findIndex(s => s.id === id);
-    
-    if (index === -1) return null;
-    
-    const updatedSkill = { ...skills[index], ...updates, updatedAt: new Date() };
-    skills[index] = updatedSkill;
-    saveData(skills);
-    return updatedSkill;
+    try {
+      const skills = getData();
+      const index = skills.findIndex(s => s.id === id);
+      
+      if (index === -1) return null;
+      
+      const updatedSkill = { ...skills[index], ...updates, updatedAt: new Date() };
+      skills[index] = updatedSkill;
+      saveData(skills);
+      console.log(`Updated skill ${id}:`, updatedSkill.name);
+      return updatedSkill;
+    } catch (error) {
+      console.error(`Error updating skill ${id}:`, error);
+      return null;
+    }
   },
   
   deleteSkill: async (id: string): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 400));
-    const skills = getData();
-    const filteredSkills = skills.filter(s => s.id !== id);
-    
-    if (filteredSkills.length === skills.length) return false;
-    
-    saveData(filteredSkills);
-    return true;
+    try {
+      const skills = getData();
+      const filteredSkills = skills.filter(s => s.id !== id);
+      
+      if (filteredSkills.length === skills.length) return false;
+      
+      saveData(filteredSkills);
+      console.log(`Deleted skill ${id}`);
+      return true;
+    } catch (error) {
+      console.error(`Error deleting skill ${id}:`, error);
+      return false;
+    }
   },
   
   // Playlists
@@ -197,6 +249,7 @@ export const api = {
     await new Promise(resolve => setTimeout(resolve, 600));
     
     try {
+      console.log(`Adding playlist with URL: ${playlistUrl} to skill: ${skillId}`);
       const skills = getData();
       const skillIndex = skills.findIndex(s => s.id === skillId);
       
@@ -240,76 +293,95 @@ export const api = {
   
   updatePlaylistTitle: async (skillId: string, playlistId: string, newTitle: string): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const skills = getData();
-    const skillIndex = skills.findIndex(s => s.id === skillId);
-    
-    if (skillIndex === -1) return false;
-    
-    const { playlists } = skills[skillIndex];
-    const playlistIndex = playlists.findIndex(p => p.id === playlistId);
-    
-    if (playlistIndex === -1) return false;
-    
-    playlists[playlistIndex].title = newTitle;
-    skills[skillIndex].updatedAt = new Date();
-    saveData(skills);
-    
-    return true;
+    try {
+      console.log(`Updating playlist title: ${playlistId} to "${newTitle}"`);
+      const skills = getData();
+      const skillIndex = skills.findIndex(s => s.id === skillId);
+      
+      if (skillIndex === -1) return false;
+      
+      const { playlists } = skills[skillIndex];
+      const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+      
+      if (playlistIndex === -1) return false;
+      
+      playlists[playlistIndex].title = newTitle;
+      skills[skillIndex].updatedAt = new Date();
+      saveData(skills);
+      
+      console.log(`Updated playlist title successfully`);
+      return true;
+    } catch (error) {
+      console.error(`Error updating playlist title:`, error);
+      return false;
+    }
   },
   
   updatePlaylistPosition: async (skillId: string, playlistId: string, newPosition: number): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const skills = getData();
-    const skillIndex = skills.findIndex(s => s.id === skillId);
-    
-    if (skillIndex === -1) return false;
-    
-    const { playlists } = skills[skillIndex];
-    const playlistIndex = playlists.findIndex(p => p.id === playlistId);
-    
-    if (playlistIndex === -1) return false;
-    
-    // Validate position
-    if (newPosition < 0 || newPosition >= playlists.length) return false;
-    
-    // Remove playlist from current position
-    const [playlist] = playlists.splice(playlistIndex, 1);
-    
-    // Insert at new position
-    playlists.splice(newPosition, 0, playlist);
-    
-    // Update positions for all playlists
-    playlists.forEach((p, idx) => {
-      p.position = idx;
-    });
-    
-    skills[skillIndex].updatedAt = new Date();
-    saveData(skills);
-    
-    return true;
+    try {
+      const skills = getData();
+      const skillIndex = skills.findIndex(s => s.id === skillId);
+      
+      if (skillIndex === -1) return false;
+      
+      const { playlists } = skills[skillIndex];
+      const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+      
+      if (playlistIndex === -1) return false;
+      
+      // Validate position
+      if (newPosition < 0 || newPosition >= playlists.length) return false;
+      
+      // Remove playlist from current position
+      const [playlist] = playlists.splice(playlistIndex, 1);
+      
+      // Insert at new position
+      playlists.splice(newPosition, 0, playlist);
+      
+      // Update positions for all playlists
+      playlists.forEach((p, idx) => {
+        p.position = idx;
+      });
+      
+      skills[skillIndex].updatedAt = new Date();
+      saveData(skills);
+      
+      console.log(`Updated playlist position: ${playlistId} to position ${newPosition}`);
+      return true;
+    } catch (error) {
+      console.error(`Error updating playlist position:`, error);
+      return false;
+    }
   },
   
   deletePlaylist: async (skillId: string, playlistId: string): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 300));
-    const skills = getData();
-    const skillIndex = skills.findIndex(s => s.id === skillId);
-    
-    if (skillIndex === -1) return false;
-    
-    const { playlists } = skills[skillIndex];
-    const updatedPlaylists = playlists.filter(p => p.id !== playlistId);
-    
-    if (updatedPlaylists.length === playlists.length) return false;
-    
-    // Update positions
-    updatedPlaylists.forEach((p, idx) => {
-      p.position = idx;
-    });
-    
-    skills[skillIndex].playlists = updatedPlaylists;
-    skills[skillIndex].updatedAt = new Date();
-    saveData(skills);
-    
-    return true;
+    try {
+      const skills = getData();
+      const skillIndex = skills.findIndex(s => s.id === skillId);
+      
+      if (skillIndex === -1) return false;
+      
+      const { playlists } = skills[skillIndex];
+      const updatedPlaylists = playlists.filter(p => p.id !== playlistId);
+      
+      if (updatedPlaylists.length === playlists.length) return false;
+      
+      // Update positions
+      updatedPlaylists.forEach((p, idx) => {
+        p.position = idx;
+      });
+      
+      skills[skillIndex].playlists = updatedPlaylists;
+      skills[skillIndex].updatedAt = new Date();
+      saveData(skills);
+      
+      console.log(`Deleted playlist: ${playlistId}`);
+      return true;
+    } catch (error) {
+      console.error(`Error deleting playlist:`, error);
+      return false;
+    }
   }
 };

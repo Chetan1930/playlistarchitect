@@ -66,6 +66,17 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
     }
   };
   
+  const handleUpdatePlaylistTitle = async (playlistId: string, newTitle: string) => {
+    const success = await api.updatePlaylistTitle(skillId, playlistId, newTitle);
+    
+    if (success) {
+      refetch();
+      toast.success("Playlist title updated");
+    } else {
+      toast.error("Failed to update playlist title");
+    }
+  };
+  
   const handlePlaylistAdded = () => {
     refetch();
     queryClient.invalidateQueries({ queryKey: ['skills'] });
@@ -149,6 +160,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
                   onMove={handleMovePlaylist}
                   onDelete={handleDeletePlaylist}
                   onUpdate={handlePlaylistUpdated}
+                  onUpdateTitle={handleUpdatePlaylistTitle}
                 />
               ))}
           </div>
