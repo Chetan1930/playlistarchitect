@@ -43,6 +43,10 @@ const SkillsList = () => {
     }
   };
   
+  const handleUpdate = () => {
+    refetch();
+  };
+  
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-8">
@@ -99,7 +103,7 @@ const SkillsList = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {skills.map((skill: Skill) => (
-            <SkillCard key={skill.id} skill={skill} />
+            <SkillCard key={skill.id} skill={skill} onUpdate={handleUpdate} />
           ))}
         </div>
       )}
