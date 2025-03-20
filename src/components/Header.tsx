@@ -47,21 +47,9 @@ const Header = () => {
           >
             Dashboard
           </Link>
-          <Link 
-            to="/about" 
-            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors duration-200"
-          >
-            About
-          </Link>
           <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2">
             Created & Maintained by <span className="font-medium text-indigo-600">Chetan Chauhan</span>
           </div>
-          <Link 
-            to="/" 
-            className="inline-flex items-center justify-center h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium px-4 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-sm"
-          >
-            Get Started
-          </Link>
         </nav>
         
         <div className="md:hidden">
