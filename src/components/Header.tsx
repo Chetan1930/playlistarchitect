@@ -9,7 +9,7 @@ const Header = () => {
           to="/" 
           className="flex items-center space-x-2 group"
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-gray-900 to-gray-700 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               viewBox="0 0 24 24" 
@@ -35,7 +35,7 @@ const Header = () => {
               <rect x="7" y="7" width="10" height="10" rx="2"></rect>
             </svg>
           </div>
-          <h1 className="text-xl font-medium tracking-tight text-gray-900 group-hover:translate-x-0.5 transition-transform duration-300">
+          <h1 className="text-xl font-medium tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-indigo-800 group-hover:translate-x-0.5 transition-transform duration-300">
             CourseTrack
           </h1>
         </Link>
@@ -43,19 +43,22 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-6">
           <Link 
             to="/" 
-            className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors duration-200"
           >
             Dashboard
           </Link>
           <Link 
             to="/about" 
-            className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors duration-200"
           >
             About
           </Link>
+          <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2">
+            Created & Maintained by <span className="font-medium text-indigo-600">Chetan Chauhan</span>
+          </div>
           <Link 
             to="/" 
-            className="inline-flex items-center justify-center h-9 rounded-full bg-gray-900 text-white text-sm font-medium px-4 hover:bg-gray-800 transition-all duration-200 shadow-sm"
+            className="inline-flex items-center justify-center h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-sm font-medium px-4 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-sm"
           >
             Get Started
           </Link>
