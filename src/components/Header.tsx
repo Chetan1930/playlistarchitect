@@ -47,8 +47,26 @@ const Header = () => {
           >
             Dashboard
           </Link>
-          <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2">
-            Created & Maintained by <span className="font-medium text-indigo-600">Chetan Chauhan</span>
+          <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2 space-y-1">
+            <p>Created & Maintained by <span className="font-medium text-indigo-600">Chetan Chauhan</span></p>
+            <div className="flex space-x-2">
+              <a 
+                href="mailto:chetanchauhan1930@gmail.com" 
+                className="hover:text-indigo-600 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Email
+              </a>
+              <a 
+                href="https://www.linkedin.com/in/chetan71/" 
+                className="hover:text-indigo-600 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn
+              </a>
+            </div>
           </div>
         </nav>
         
