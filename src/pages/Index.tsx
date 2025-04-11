@@ -43,11 +43,11 @@ const Index = () => {
               <p className="text-sm text-gray-500">
                 © {new Date().getFullYear()} CourseTrack. Created by Chetan Chauhan.
               </p>
-              <p className="text-sm text-gray-500">
+              {/* <p className="text-sm text-gray-500">
                 <a href="mailto:chetanchauhan1930@gmail.com" className="hover:text-gray-900 transition-colors">
                   chetanchauhan1930@gmail.com
                 </a>
-              </p>
+              </p> */}
             </div>
             
             <div className="flex space-x-6">
