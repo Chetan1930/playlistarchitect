@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Playlist } from '@/utils/types';
 import { Button } from '@/components/ui/button';
@@ -11,8 +10,19 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { api } from '@/utils/api';
-import { MoreVertical, ArrowUp, ArrowDown, Trash2, Edit, CheckCircle, GripVertical } from 'lucide-react';
+import { MoreVertical, ArrowUp, ArrowDown, Trash2, Edit, CheckCircle, GripVertical, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +57,7 @@ const PlaylistItem = ({
   dragHandleProps,
 }: PlaylistItemProps) => {
   const [open, setOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [title, setTitle] = useState(playlist.title);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -73,6 +84,11 @@ const PlaylistItem = ({
   const toggleComplete = () => {
     setIsCompleted(!isCompleted);
     toast.success(isCompleted ? "Marked as incomplete" : "Marked as complete");
+  };
+
+  const handleDelete = async () => {
+    await onDelete(playlist.id);
+    setDeleteDialogOpen(false);
   };
 
   return (
@@ -111,6 +127,35 @@ const PlaylistItem = ({
             <CheckCircle className="mr-1 h-4 w-4" />
             {isCompleted ? 'Completed' : 'Mark Done'}
           </Button>
+          
+          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all duration-200"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Playlist</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this playlist? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-red-500 hover:bg-red-600"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -144,7 +189,7 @@ const PlaylistItem = ({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
-                onClick={() => onDelete(playlist.id)}
+                onClick={() => setDeleteDialogOpen(true)}
                 className="text-red-500 hover:bg-red-50 hover:text-red-600 cursor-pointer transition-colors duration-200"
               >
                 <Trash2 className="mr-2 h-4 w-4" />
