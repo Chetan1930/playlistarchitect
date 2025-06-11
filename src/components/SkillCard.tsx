@@ -1,10 +1,21 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Skill } from '@/utils/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,10 +28,12 @@ interface SkillCardProps {
 
 const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
   const [open, setOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [name, setName] = useState(skill.name);
   const [description, setDescription] = useState(skill.description);
   const [thumbnailUrl, setThumbnailUrl] = useState(skill.thumbnailUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const playlistCount = skill.playlists.length;
 
@@ -48,6 +61,26 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    
+    try {
+      const success = await api.deleteSkill(skill.id);
+      if (success) {
+        toast.success("Skill deleted successfully");
+        onUpdate();
+        setDeleteDialogOpen(false);
+      } else {
+        toast.error("Failed to delete skill. Please try again.");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete skill. Please try again.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <div className="group transition-all duration-300 flex flex-col h-full overflow-hidden bg-white hover:bg-gray-50 rounded-2xl border border-gray-100 hover:border-gray-200 shadow-sm hover:shadow-md animate-scale will-change-transform relative">
@@ -60,21 +93,57 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
             className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-          <Button 
-            size="icon" 
-            variant="secondary" 
-            className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setName(skill.name);
-              setDescription(skill.description);
-              setThumbnailUrl(skill.thumbnailUrl);
-              setOpen(true);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-2">
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className="bg-white/90 hover:bg-white"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setName(skill.name);
+                setDescription(skill.description);
+                setThumbnailUrl(skill.thumbnailUrl);
+                setOpen(true);
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  size="icon" 
+                  variant="secondary" 
+                  className="bg-red-500/90 hover:bg-red-600 text-white"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{skill.name}"? This will also delete all associated playlists. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-red-500 hover:bg-red-600"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
         
         <div className="flex-1 flex flex-col p-5">
