@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -62,23 +61,34 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
   };
 
   const handleDelete = async () => {
+    console.log(`Attempting to delete skill: ${skill.id} - ${skill.name}`);
     setIsDeleting(true);
     
     try {
       const success = await api.deleteSkill(skill.id);
+      console.log(`Delete operation result: ${success}`);
+      
       if (success) {
         toast.success("Skill deleted successfully");
-        onUpdate();
         setDeleteDialogOpen(false);
+        onUpdate(); // This will trigger a refetch of skills
       } else {
+        console.error('Delete operation returned false');
         toast.error("Failed to delete skill. Please try again.");
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error during delete operation:', error);
       toast.error("Failed to delete skill. Please try again.");
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleDeleteButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log(`Opening delete dialog for skill: ${skill.name}`);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -110,39 +120,14 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
               <Pencil className="h-4 w-4" />
             </Button>
             
-            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  size="icon" 
-                  variant="secondary" 
-                  className="bg-red-500/90 hover:bg-red-600 text-white"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Skill</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete "{skill.name}"? This will also delete all associated playlists. This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-red-500 hover:bg-red-600"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
-                    {isDeleting ? 'Deleting...' : 'Delete'}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button 
+              size="icon" 
+              variant="secondary" 
+              className="bg-red-500/90 hover:bg-red-600 text-white"
+              onClick={handleDeleteButtonClick}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
         
@@ -185,6 +170,7 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
         </div>
       </div>
 
+      {/* Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -255,6 +241,28 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{skill.name}"? This will also delete all associated playlists ({playlistCount} playlist{playlistCount !== 1 ? 's' : ''}). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-500 hover:bg-red-600 text-white"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
