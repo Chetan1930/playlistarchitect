@@ -1,50 +1,135 @@
-# Welcome to Chetan project
 
-## Project info
+# CourseTrack - Build Learning Paths
 
-**Use your preferred IDE**
+A modern web application for organizing and tracking your learning journey. Create skills, build playlists of learning resources, and monitor your progress as you develop new capabilities.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+![CourseTrack](https://source.unsplash.com/1200x600?learning,education)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Features
 
-Follow these steps:
+- **Skill Management**: Create and organize different skills you want to learn
+- **Playlist Organization**: Build curated playlists of learning resources for each skill
+- **Progress Tracking**: Mark completed items and track your learning progress
+- **Modern UI**: Clean, responsive design with smooth animations
+- **Drag & Drop**: Reorder playlist items with intuitive drag-and-drop functionality
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🛠️ Tech Stack
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: shadcn/ui
+- **Icons**: Lucide React
+- **Drag & Drop**: react-beautiful-dnd
+- **State Management**: @tanstack/react-query
+- **Notifications**: Sonner
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 📦 Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_REPOSITORY_URL>
+   cd coursetrack
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser**
+   Navigate to `http://localhost:8080` to view the application.
+
+## 🎯 Usage
+
+### Creating Skills
+1. Click the "Add New Skill" button on the homepage
+2. Enter a skill name and description
+3. Optionally add a custom thumbnail URL
+4. Save to create your new skill
+
+### Managing Playlists
+1. Click on any skill card to view its details
+2. Add new playlists with the "Add Playlist" button
+3. Drag and drop to reorder playlist items
+4. Mark items as complete to track your progress
+
+### Editing and Deleting
+- Hover over skill cards to reveal edit and delete options
+- Use the edit button to modify skill details
+- Delete skills (and all associated playlists) with the delete button
+
+## 🚀 Build for Production
+
+```bash
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+The built files will be in the `dist` directory, ready for deployment to any static hosting service.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📱 Responsive Design
 
-**Use GitHub Codespaces**
+CourseTrack is fully responsive and works seamlessly across:
+- Desktop computers
+- Tablets
+- Mobile devices
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🎨 Customization
 
-## What technologies are used for this project?
+The application uses Tailwind CSS for styling, making it easy to customize:
+- Colors and themes can be modified in `tailwind.config.ts`
+- Component styles are located in `src/components/`
+- Global styles are in `src/index.css`
 
-This project is built with .
+## 📂 Project Structure
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```
+src/
+├── components/          # Reusable UI components
+│   ├── ui/             # shadcn/ui components
+│   ├── Header.tsx      # Application header
+│   ├── SkillCard.tsx   # Individual skill cards
+│   └── ...
+├── pages/              # Application pages
+│   ├── Index.tsx       # Homepage
+│   ├── SkillDetail.tsx # Skill detail page
+│   └── ...
+├── utils/              # Utility functions
+│   ├── api.ts          # API functions
+│   └── types.ts        # TypeScript types
+└── hooks/              # Custom React hooks
+```
 
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 📝 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 👨‍💻 Author
+
+**Chetan Chauhan**
+- Email: chetanchauhan1930@gmail.com
+- GitHub: [Your GitHub Profile]
+
+## 🙏 Acknowledgments
+
+- Built with modern React and TypeScript
+- UI components powered by shadcn/ui
+- Icons provided by Lucide React
+- Styling with Tailwind CSS
+
+---
+
+*Happy Learning! 🎓*
