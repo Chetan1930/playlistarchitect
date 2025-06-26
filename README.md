@@ -3,7 +3,7 @@
 
 A modern web application for organizing and tracking your learning journey. Create skills, build playlists of learning resources, and monitor your progress as you develop new capabilities.
 
-![CourseTrack](https://source.unsplash.com/1200x600?learning,education)
+Live project link: https://makeplaylist.netlify.app/
 
 ## 🚀 Features
 
@@ -28,7 +28,7 @@ A modern web application for organizing and tracking your learning journey. Crea
 
 1. **Clone the repository**
    ```bash
-   git clone <YOUR_REPOSITORY_URL>
+   git clone https://github.com/Chetan1930/playlistarchitect.git
    cd coursetrack
    ```
 
@@ -121,7 +121,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **Chetan Chauhan**
 - Email: chetanchauhan1930@gmail.com
-- GitHub: [Your GitHub Profile]
+- GitHub: https://github.com/Chetan1930
 
 ## 🙏 Acknowledgments
 
