@@ -78,67 +78,52 @@ const getRelevantImage = (keyword: string): string => {
   return imageOptions[Math.floor(Math.random() * imageOptions.length)];
 };
 
-// Fetch YouTube video details
+// Fetch YouTube video details using oEmbed API
 export const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
   try {
-    // Extract video ID from URL
-    let videoId = '';
+    console.log(`Fetching details for URL: ${url}`);
     
-    // Handle different YouTube URL formats
-    if (url.includes('youtube.com/watch')) {
-      const urlObj = new URL(url);
-      videoId = urlObj.searchParams.get('v') || '';
-    } else if (url.includes('youtu.be/')) {
-      videoId = url.split('youtu.be/')[1]?.split('?')[0] || '';
-    } else if (url.includes('youtube.com/playlist')) {
-      const urlObj = new URL(url);
-      videoId = urlObj.searchParams.get('list') || '';
-    }
+    // Use YouTube oEmbed API (no API key required)
+    const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
     
-    if (!videoId) {
-      console.log('Could not extract valid YouTube ID from URL:', url);
-      // Return a default object even if we can't extract the video ID
+    const response = await fetch(oembedUrl);
+    
+    if (!response.ok) {
+      console.error('Failed to fetch YouTube details:', response.status);
+      // Fallback to extracting keywords from URL for image
+      const urlLower = url.toLowerCase();
+      let keywords = urlLower.includes('javascript') ? 'javascript' :
+                     urlLower.includes('python') ? 'python' :
+                     urlLower.includes('design') ? 'design' :
+                     urlLower.includes('data') ? 'data' :
+                     urlLower.includes('web') ? 'web' : 'coding';
+      
       return {
         title: "Learning Resource",
-        thumbnailUrl: getRelevantImage("learning"),
+        thumbnailUrl: getRelevantImage(keywords),
         description: "A learning resource added to your collection."
       };
     }
     
-    console.log(`Fetching details for video/playlist ID: ${videoId}`);
+    const data = await response.json();
     
-    // Extract topic from URL for better image selection
-    const urlLower = url.toLowerCase();
-    let keywords = urlLower.includes('javascript') ? 'javascript' :
-                   urlLower.includes('python') ? 'python' :
-                   urlLower.includes('design') ? 'design' :
-                   urlLower.includes('data') ? 'data' :
-                   urlLower.includes('web') ? 'web' : 'coding';
+    // Extract topic from title for better image selection
+    const titleLower = data.title.toLowerCase();
+    let keywords = titleLower.includes('javascript') ? 'javascript' :
+                   titleLower.includes('python') ? 'python' :
+                   titleLower.includes('design') ? 'design' :
+                   titleLower.includes('data') ? 'data' :
+                   titleLower.includes('web') ? 'web' :
+                   titleLower.includes('react') ? 'web' :
+                   titleLower.includes('vue') ? 'web' :
+                   titleLower.includes('angular') ? 'web' : 'coding';
     
     const thumbnailUrl = getRelevantImage(keywords);
     
-    // Return data
-    const randomIndex = Math.floor(Math.random() * 5);
-    const titles = [
-      "Learn Web Development Basics",
-      "Data Structures Explained",
-      "Advanced JavaScript Techniques",
-      "Algorithms for Beginners",
-      "UI/UX Design Fundamentals"
-    ];
-    
-    const descriptions = [
-      "Master the fundamentals of web development with this comprehensive guide.",
-      "Learn all about data structures and how they work in this tutorial.",
-      "Take your JavaScript skills to the next level with these advanced techniques.",
-      "A beginner-friendly introduction to algorithms and problem-solving.",
-      "Explore the principles of great UI/UX design in this detailed course."
-    ];
-    
     return {
-      title: titles[randomIndex],
-      thumbnailUrl,
-      description: descriptions[randomIndex]
+      title: data.title,
+      thumbnailUrl: thumbnailUrl,
+      description: `Learn from ${data.author_name}`
     };
   } catch (error) {
     console.error('Error fetching video details:', error);
