@@ -18,10 +18,10 @@ const Index = () => {
   const hasSkills = skills.length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       
-      <main className="container mx-auto px-6 pt-24 pb-16">
+      <main className="container mx-auto px-6 pt-24 pb-16 flex-1">
         {!authLoading && !user && (
           <section className="mb-16">
             <div className="max-w-3xl mx-auto text-center py-12">
@@ -56,7 +56,7 @@ const Index = () => {
         {user && <SkillsList />}
       </main>
       
-      <footer className="mt-auto py-8 bg-white border-t border-gray-100">
+      <footer className="py-8 bg-white border-t border-gray-100 mt-auto">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
