@@ -1,72 +1,23 @@
-
+import { supabase } from '@/integrations/supabase/client';
 import { Skill, Playlist } from './types';
-
-// Simulating a database with localStorage
-const SKILLS_KEY = 'course_skills';
-
-// Helper to get data from localStorage
-const getData = (): Skill[] => {
-  const data = localStorage.getItem(SKILLS_KEY);
-  if (!data) return [];
-  
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    console.error("Error parsing stored data:", e);
-    return [];
-  }
-};
-
-// Helper to save data to localStorage
-const saveData = (data: Skill[]): void => {
-  try {
-    localStorage.setItem(SKILLS_KEY, JSON.stringify(data));
-  } catch (e) {
-    console.error("Error saving data to localStorage:", e);
-  }
-};
-
-// Generate random ID
-const generateId = (): string => {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-};
 
 // Get a relevant image based on keywords
 const getRelevantImage = (keyword: string): string => {
-  // Collection of high-quality educational images
   const imageOptions = [
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop",  // tech setup
-    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop",  // coding
-    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&auto=format&fit=crop",  // laptop
-    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop",  // circuit
-    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&auto=format&fit=crop",  // study
+    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=800&auto=format&fit=crop",
   ];
   
-  // Simple mapping of keywords to images
   const keywordMap: Record<string, number> = {
-    javascript: 2,
-    python: 1,
-    web: 0,
-    design: 4,
-    development: 0,
-    programming: 1,
-    data: 3,
-    machine: 3,
-    learning: 4,
-    ai: 3,
-    frontend: 0,
-    backend: 1,
-    fullstack: 2,
-    database: 3,
-    cloud: 3,
-    mobile: 0,
-    game: 2,
-    security: 3,
-    devops: 1,
-    testing: 0,
+    javascript: 2, python: 1, web: 0, design: 4, development: 0,
+    programming: 1, data: 3, machine: 3, learning: 4, ai: 3,
+    frontend: 0, backend: 1, fullstack: 2, database: 3, cloud: 3,
+    mobile: 0, game: 2, security: 3, devops: 1, testing: 0,
   };
   
-  // Find matching keywords
   const lowerKeyword = keyword.toLowerCase();
   for (const [key, index] of Object.entries(keywordMap)) {
     if (lowerKeyword.includes(key)) {
@@ -74,23 +25,16 @@ const getRelevantImage = (keyword: string): string => {
     }
   }
   
-  // Default to a random image if no keyword matches
   return imageOptions[Math.floor(Math.random() * imageOptions.length)];
 };
 
 // Fetch YouTube video details using oEmbed API
 export const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
   try {
-    console.log(`Fetching details for URL: ${url}`);
-    
-    // Use YouTube oEmbed API (no API key required)
     const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-    
     const response = await fetch(oembedUrl);
     
     if (!response.ok) {
-      console.error('Failed to fetch YouTube details:', response.status);
-      // Fallback to extracting keywords from URL for image
       const urlLower = url.toLowerCase();
       let keywords = urlLower.includes('javascript') ? 'javascript' :
                      urlLower.includes('python') ? 'python' :
@@ -106,8 +50,6 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
     }
     
     const data = await response.json();
-    
-    // Extract topic from title for better image selection
     const titleLower = data.title.toLowerCase();
     let keywords = titleLower.includes('javascript') ? 'javascript' :
                    titleLower.includes('python') ? 'python' :
@@ -118,16 +60,13 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
                    titleLower.includes('vue') ? 'web' :
                    titleLower.includes('angular') ? 'web' : 'coding';
     
-    const thumbnailUrl = getRelevantImage(keywords);
-    
     return {
       title: data.title,
-      thumbnailUrl: thumbnailUrl,
+      thumbnailUrl: getRelevantImage(keywords),
       description: `Learn from ${data.author_name}`
     };
   } catch (error) {
     console.error('Error fetching video details:', error);
-    // Return a fallback object in case of errors
     return {
       title: "Learning Resource",
       thumbnailUrl: getRelevantImage("learning"),
@@ -136,237 +75,252 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
   }
 };
 
-// API methods
+// API methods using Supabase
 export const api = {
-  // Skills
   getSkills: async (): Promise<Skill[]> => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    try {
-      const skills = getData();
-      console.log("Retrieved skills:", skills.length);
-      return skills;
-    } catch (error) {
-      console.error("Error getting skills:", error);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: skills, error } = await supabase
+      .from('skills')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching skills:', error);
       return [];
     }
+
+    // Fetch playlists for each skill
+    const skillsWithPlaylists = await Promise.all(
+      (skills || []).map(async (skill) => {
+        const { data: playlists } = await supabase
+          .from('playlists')
+          .select('*')
+          .eq('skill_id', skill.id)
+          .order('position', { ascending: true });
+
+        return {
+          id: skill.id,
+          name: skill.name,
+          description: skill.description || '',
+          thumbnailUrl: skill.thumbnail_url,
+          createdAt: new Date(skill.created_at),
+          updatedAt: new Date(skill.updated_at),
+          playlists: (playlists || []).map(p => ({
+            id: p.id,
+            title: p.title,
+            url: p.url,
+            thumbnailUrl: p.thumbnail_url,
+            description: p.description,
+            position: p.position,
+          })),
+        };
+      })
+    );
+
+    return skillsWithPlaylists;
   },
-  
+
   getSkill: async (id: string): Promise<Skill | null> => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    try {
-      const skills = getData();
-      const skill = skills.find(s => s.id === id);
-      console.log(`Retrieved skill ${id}:`, skill ? "found" : "not found");
-      return skill || null;
-    } catch (error) {
-      console.error(`Error getting skill ${id}:`, error);
+    const { data: skill, error } = await supabase
+      .from('skills')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error || !skill) {
+      console.error('Error fetching skill:', error);
       return null;
     }
+
+    const { data: playlists } = await supabase
+      .from('playlists')
+      .select('*')
+      .eq('skill_id', id)
+      .order('position', { ascending: true });
+
+    return {
+      id: skill.id,
+      name: skill.name,
+      description: skill.description || '',
+      thumbnailUrl: skill.thumbnail_url,
+      createdAt: new Date(skill.created_at),
+      updatedAt: new Date(skill.updated_at),
+      playlists: (playlists || []).map(p => ({
+        id: p.id,
+        title: p.title,
+        url: p.url,
+        thumbnailUrl: p.thumbnail_url,
+        description: p.description,
+        position: p.position,
+      })),
+    };
   },
-  
+
   createSkill: async (name: string, description: string): Promise<Skill> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    try {
-      const skills = getData();
-      
-      // Generate a relevant thumbnail based on the skill name
-      const thumbnailUrl = getRelevantImage(name);
-      
-      const newSkill: Skill = {
-        id: generateId(),
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    const thumbnailUrl = getRelevantImage(name);
+
+    const { data: skill, error } = await supabase
+      .from('skills')
+      .insert({
+        user_id: user.id,
         name,
-        description: description || `Created by Chetan Chauhan`,
-        playlists: [],
-        thumbnailUrl,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      skills.push(newSkill);
-      saveData(skills);
-      console.log("Created new skill:", newSkill.name);
-      return newSkill;
-    } catch (error) {
-      console.error("Error creating skill:", error);
+        description: description || `Created by you`,
+        thumbnail_url: thumbnailUrl,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating skill:', error);
       throw error;
     }
+
+    return {
+      id: skill.id,
+      name: skill.name,
+      description: skill.description || '',
+      thumbnailUrl: skill.thumbnail_url,
+      createdAt: new Date(skill.created_at),
+      updatedAt: new Date(skill.updated_at),
+      playlists: [],
+    };
   },
-  
+
   updateSkill: async (id: string, updates: Partial<Skill>): Promise<Skill | null> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    try {
-      const skills = getData();
-      const index = skills.findIndex(s => s.id === id);
-      
-      if (index === -1) return null;
-      
-      const updatedSkill = { ...skills[index], ...updates, updatedAt: new Date() };
-      skills[index] = updatedSkill;
-      saveData(skills);
-      console.log(`Updated skill ${id}:`, updatedSkill.name);
-      return updatedSkill;
-    } catch (error) {
-      console.error(`Error updating skill ${id}:`, error);
+    const { data: skill, error } = await supabase
+      .from('skills')
+      .update({
+        name: updates.name,
+        description: updates.description,
+        thumbnail_url: updates.thumbnailUrl,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating skill:', error);
       return null;
     }
+
+    return api.getSkill(id);
   },
-  
+
   deleteSkill: async (id: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    try {
-      const skills = getData();
-      const filteredSkills = skills.filter(s => s.id !== id);
-      
-      if (filteredSkills.length === skills.length) return false;
-      
-      saveData(filteredSkills);
-      console.log(`Deleted skill ${id}`);
-      return true;
-    } catch (error) {
-      console.error(`Error deleting skill ${id}:`, error);
+    const { error } = await supabase
+      .from('skills')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting skill:', error);
       return false;
     }
+    return true;
   },
-  
-  // Playlists
+
   addPlaylist: async (skillId: string, playlistUrl: string): Promise<Playlist | null> => {
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    try {
-      console.log(`Adding playlist with URL: ${playlistUrl} to skill: ${skillId}`);
-      const skills = getData();
-      const skillIndex = skills.findIndex(s => s.id === skillId);
-      
-      if (skillIndex === -1) {
-        console.error(`Skill with ID ${skillId} not found`);
-        return null;
-      }
-      
-      // Get video details (title, thumbnail, etc.)
-      const details = await fetchYouTubeDetails(playlistUrl);
-      
-      if (!details) {
-        console.error('Failed to fetch playlist details');
-        return null;
-      }
-      
-      // Calculate next position
-      const nextPosition = skills[skillIndex].playlists.length;
-      
-      const newPlaylist: Playlist = {
-        id: generateId(),
+    const details = await fetchYouTubeDetails(playlistUrl);
+    if (!details) return null;
+
+    // Get current max position
+    const { data: existingPlaylists } = await supabase
+      .from('playlists')
+      .select('position')
+      .eq('skill_id', skillId)
+      .order('position', { ascending: false })
+      .limit(1);
+
+    const nextPosition = existingPlaylists && existingPlaylists.length > 0 
+      ? existingPlaylists[0].position + 1 
+      : 0;
+
+    const { data: playlist, error } = await supabase
+      .from('playlists')
+      .insert({
+        skill_id: skillId,
         title: details.title,
         url: playlistUrl,
-        thumbnailUrl: details.thumbnailUrl,
+        thumbnail_url: details.thumbnailUrl,
         description: details.description,
-        position: nextPosition
-      };
-      
-      console.log('Adding new playlist:', newPlaylist);
-      
-      skills[skillIndex].playlists.push(newPlaylist);
-      skills[skillIndex].updatedAt = new Date();
-      saveData(skills);
-      
-      return newPlaylist;
-    } catch (error) {
+        position: nextPosition,
+      })
+      .select()
+      .single();
+
+    if (error) {
       console.error('Error adding playlist:', error);
       return null;
     }
+
+    return {
+      id: playlist.id,
+      title: playlist.title,
+      url: playlist.url,
+      thumbnailUrl: playlist.thumbnail_url,
+      description: playlist.description,
+      position: playlist.position,
+    };
   },
-  
+
   updatePlaylistTitle: async (skillId: string, playlistId: string, newTitle: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    try {
-      console.log(`Updating playlist title: ${playlistId} to "${newTitle}"`);
-      const skills = getData();
-      const skillIndex = skills.findIndex(s => s.id === skillId);
-      
-      if (skillIndex === -1) return false;
-      
-      const { playlists } = skills[skillIndex];
-      const playlistIndex = playlists.findIndex(p => p.id === playlistId);
-      
-      if (playlistIndex === -1) return false;
-      
-      playlists[playlistIndex].title = newTitle;
-      skills[skillIndex].updatedAt = new Date();
-      saveData(skills);
-      
-      console.log(`Updated playlist title successfully`);
-      return true;
-    } catch (error) {
-      console.error(`Error updating playlist title:`, error);
+    const { error } = await supabase
+      .from('playlists')
+      .update({ title: newTitle })
+      .eq('id', playlistId);
+
+    if (error) {
+      console.error('Error updating playlist title:', error);
       return false;
     }
+    return true;
   },
-  
+
   updatePlaylistPosition: async (skillId: string, playlistId: string, newPosition: number): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    try {
-      const skills = getData();
-      const skillIndex = skills.findIndex(s => s.id === skillId);
-      
-      if (skillIndex === -1) return false;
-      
-      const { playlists } = skills[skillIndex];
-      const playlistIndex = playlists.findIndex(p => p.id === playlistId);
-      
-      if (playlistIndex === -1) return false;
-      
-      // Validate position
-      if (newPosition < 0 || newPosition >= playlists.length) return false;
-      
-      // Remove playlist from current position
-      const [playlist] = playlists.splice(playlistIndex, 1);
-      
-      // Insert at new position
-      playlists.splice(newPosition, 0, playlist);
-      
-      // Update positions for all playlists
-      playlists.forEach((p, idx) => {
-        p.position = idx;
-      });
-      
-      skills[skillIndex].updatedAt = new Date();
-      saveData(skills);
-      
-      console.log(`Updated playlist position: ${playlistId} to position ${newPosition}`);
-      return true;
-    } catch (error) {
-      console.error(`Error updating playlist position:`, error);
-      return false;
-    }
+    // Get all playlists for the skill
+    const { data: playlists, error: fetchError } = await supabase
+      .from('playlists')
+      .select('*')
+      .eq('skill_id', skillId)
+      .order('position', { ascending: true });
+
+    if (fetchError || !playlists) return false;
+
+    const playlistIndex = playlists.findIndex(p => p.id === playlistId);
+    if (playlistIndex === -1) return false;
+
+    // Reorder playlists
+    const [removed] = playlists.splice(playlistIndex, 1);
+    playlists.splice(newPosition, 0, removed);
+
+    // Update all positions
+    const updates = playlists.map((p, idx) => 
+      supabase
+        .from('playlists')
+        .update({ position: idx })
+        .eq('id', p.id)
+    );
+
+    await Promise.all(updates);
+    return true;
   },
-  
+
   deletePlaylist: async (skillId: string, playlistId: string): Promise<boolean> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    try {
-      const skills = getData();
-      const skillIndex = skills.findIndex(s => s.id === skillId);
-      
-      if (skillIndex === -1) return false;
-      
-      const { playlists } = skills[skillIndex];
-      const updatedPlaylists = playlists.filter(p => p.id !== playlistId);
-      
-      if (updatedPlaylists.length === playlists.length) return false;
-      
-      // Update positions
-      updatedPlaylists.forEach((p, idx) => {
-        p.position = idx;
-      });
-      
-      skills[skillIndex].playlists = updatedPlaylists;
-      skills[skillIndex].updatedAt = new Date();
-      saveData(skills);
-      
-      console.log(`Deleted playlist: ${playlistId}`);
-      return true;
-    } catch (error) {
-      console.error(`Error deleting playlist:`, error);
+    const { error } = await supabase
+      .from('playlists')
+      .delete()
+      .eq('id', playlistId);
+
+    if (error) {
+      console.error('Error deleting playlist:', error);
       return false;
     }
+    return true;
   }
 };

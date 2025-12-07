@@ -1,7 +1,17 @@
-
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { LogOut, User } from 'lucide-react';
 
 const Header = () => {
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
       <div className="container mx-auto px-6 py-4 flex items-center justify-between">
@@ -40,26 +50,57 @@ const Header = () => {
           </h1>
         </Link>
         
-        <nav className="hidden md:flex items-center space-x-6">
-          <Link 
-            to="/" 
-            className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors duration-200"
-          >
-            Dashboard
-          </Link>
-          <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2 space-y-1">
-            <p>Created & Maintained by <span className="font-medium text-indigo-600"><a 
-                href="https://www.linkedin.com/in/chetan71/" 
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Chetan Chauhan
-              </a></span></p>
-            <div className="flex space-x-2">
-              
-        
+        <nav className="flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-4">
+            <Link 
+              to="/" 
+              className="text-sm font-medium text-gray-600 hover:text-indigo-600 transition-colors duration-200"
+            >
+              Dashboard
+            </Link>
+            <div className="text-xs text-gray-500 border-l border-gray-200 pl-4 ml-2">
+              <p>Created by <a 
+                  href="https://www.linkedin.com/in/chetan71/" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-indigo-600 hover:underline"
+                >
+                  Chetan Chauhan
+                </a>
+              </p>
             </div>
           </div>
+
+          {!loading && (
+            <div className="flex items-center space-x-2">
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
+                    <User className="w-4 h-4" />
+                    <span className="max-w-[150px] truncate">{user.email}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="hidden sm:inline">Sign out</span>
+                  </Button>
+                </div>
+              ) : (
+                <Link to="/auth">
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                  >
+                    Sign in
+                  </Button>
+                </Link>
+              )}
+            </div>
+          )}
         </nav>
         
         <div className="md:hidden">
