@@ -28,25 +28,19 @@ const getRelevantImage = (keyword: string): string => {
   return imageOptions[Math.floor(Math.random() * imageOptions.length)];
 };
 
+// Check if URL is a YouTube URL
+const isYouTubeUrl = (url: string): boolean => {
+  return url.includes('youtube.com') || url.includes('youtu.be');
+};
+
 // Fetch YouTube video details using oEmbed API
-export const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
+const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
   try {
     const oembedUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
     const response = await fetch(oembedUrl);
     
     if (!response.ok) {
-      const urlLower = url.toLowerCase();
-      let keywords = urlLower.includes('javascript') ? 'javascript' :
-                     urlLower.includes('python') ? 'python' :
-                     urlLower.includes('design') ? 'design' :
-                     urlLower.includes('data') ? 'data' :
-                     urlLower.includes('web') ? 'web' : 'coding';
-      
-      return {
-        title: "Learning Resource",
-        thumbnailUrl: getRelevantImage(keywords),
-        description: "A learning resource added to your collection."
-      };
+      return null;
     }
     
     const data = await response.json();
@@ -66,13 +60,72 @@ export const fetchYouTubeDetails = async (url: string): Promise<{ title: string;
       description: `Learn from ${data.author_name}`
     };
   } catch (error) {
-    console.error('Error fetching video details:', error);
-    return {
-      title: "Learning Resource",
-      thumbnailUrl: getRelevantImage("learning"),
-      description: "A learning resource added to your collection."
-    };
+    console.error('Error fetching YouTube details:', error);
+    return null;
   }
+};
+
+// Fetch webpage title using edge function
+const fetchWebpageTitle = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-page-title', {
+      body: { url },
+    });
+
+    if (error || !data.success) {
+      console.error('Error fetching webpage title:', error || data.error);
+      return null;
+    }
+
+    const titleLower = data.title.toLowerCase();
+    let keywords = titleLower.includes('javascript') ? 'javascript' :
+                   titleLower.includes('python') ? 'python' :
+                   titleLower.includes('design') ? 'design' :
+                   titleLower.includes('data') ? 'data' :
+                   titleLower.includes('web') ? 'web' :
+                   titleLower.includes('doc') ? 'documentation' :
+                   titleLower.includes('guide') ? 'learning' : 'coding';
+
+    return {
+      title: data.title,
+      thumbnailUrl: getRelevantImage(keywords),
+      description: 'A learning resource added to your collection.'
+    };
+  } catch (error) {
+    console.error('Error fetching webpage title:', error);
+    return null;
+  }
+};
+
+// Fetch details for any URL (YouTube or webpage)
+export const fetchUrlDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string }> => {
+  // Try YouTube first if it's a YouTube URL
+  if (isYouTubeUrl(url)) {
+    const youtubeDetails = await fetchYouTubeDetails(url);
+    if (youtubeDetails) {
+      return youtubeDetails;
+    }
+  }
+  
+  // Try fetching webpage title
+  const webpageDetails = await fetchWebpageTitle(url);
+  if (webpageDetails) {
+    return webpageDetails;
+  }
+  
+  // Fallback
+  const urlLower = url.toLowerCase();
+  let keywords = urlLower.includes('javascript') ? 'javascript' :
+                 urlLower.includes('python') ? 'python' :
+                 urlLower.includes('design') ? 'design' :
+                 urlLower.includes('data') ? 'data' :
+                 urlLower.includes('web') ? 'web' : 'coding';
+  
+  return {
+    title: "Learning Resource",
+    thumbnailUrl: getRelevantImage(keywords),
+    description: "A learning resource added to your collection."
+  };
 };
 
 // API methods using Supabase
@@ -226,8 +279,7 @@ export const api = {
   },
 
   addPlaylist: async (skillId: string, playlistUrl: string): Promise<Playlist | null> => {
-    const details = await fetchYouTubeDetails(playlistUrl);
-    if (!details) return null;
+    const details = await fetchUrlDetails(playlistUrl);
 
     // Get current max position
     const { data: existingPlaylists } = await supabase
