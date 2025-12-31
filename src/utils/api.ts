@@ -163,6 +163,7 @@ export const api = {
           updatedAt: new Date(skill.updated_at),
           playlists: (playlists || []).map(p => ({
             id: p.id,
+            isCompleted: p.is_completed,
             title: p.title,
             url: p.url,
             thumbnailUrl: p.thumbnail_url,
@@ -208,6 +209,7 @@ export const api = {
         thumbnailUrl: p.thumbnail_url,
         description: p.description,
         position: p.position,
+        isCompleted: p.is_completed,
       })),
     };
   },
@@ -318,6 +320,7 @@ export const api = {
       thumbnailUrl: playlist.thumbnail_url,
       description: playlist.description,
       position: playlist.position,
+      isCompleted: playlist.is_completed,
     };
   },
 
@@ -329,6 +332,19 @@ export const api = {
 
     if (error) {
       console.error('Error updating playlist title:', error);
+      return false;
+    }
+    return true;
+  },
+
+  updatePlaylistCompletion: async (playlistId: string, isCompleted: boolean): Promise<boolean> => {
+    const { error } = await supabase
+      .from('playlists')
+      .update({ is_completed: isCompleted })
+      .eq('id', playlistId);
+
+    if (error) {
+      console.error('Error updating playlist completion:', error);
       return false;
     }
     return true;

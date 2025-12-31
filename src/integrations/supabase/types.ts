@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          is_completed: boolean
           position: number
           skill_id: string
           thumbnail_url: string | null
@@ -29,6 +30,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_completed?: boolean
           position?: number
           skill_id: string
           thumbnail_url?: string | null
@@ -39,6 +41,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          is_completed?: boolean
           position?: number
           skill_id?: string
           thumbnail_url?: string | null

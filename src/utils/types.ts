@@ -6,6 +6,7 @@ export interface Playlist {
   thumbnailUrl: string | null;
   description: string | null;
   position: number;
+  isCompleted: boolean;
 }
 
 export interface Skill {
