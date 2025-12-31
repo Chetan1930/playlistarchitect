@@ -60,7 +60,7 @@ const PlaylistItem = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [title, setTitle] = useState(playlist.title);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCompleted, setIsCompleted] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(playlist.isCompleted);
 
   const handleTitleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,9 +81,17 @@ const PlaylistItem = ({
     }
   };
 
-  const toggleComplete = () => {
-    setIsCompleted(!isCompleted);
-    toast.success(isCompleted ? "Marked as incomplete" : "Marked as complete");
+  const toggleComplete = async () => {
+    const newStatus = !isCompleted;
+    setIsCompleted(newStatus);
+    
+    const success = await api.updatePlaylistCompletion(playlist.id, newStatus);
+    if (success) {
+      toast.success(newStatus ? "Marked as complete" : "Marked as incomplete");
+    } else {
+      setIsCompleted(!newStatus); // Revert on failure
+      toast.error("Failed to update completion status");
+    }
   };
 
   const handleDelete = async () => {
