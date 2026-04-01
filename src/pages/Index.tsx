@@ -63,6 +63,23 @@ const Index = () => {
         )}
         
         {user && <SkillsList />}
+        
+        {user && sharedSkills.length > 0 && (
+          <section className="mt-12">
+            <div className="flex items-center gap-2 mb-6">
+              <h2 className="text-xl font-medium text-gray-900">Shared with you</h2>
+              <Badge variant="secondary">{sharedSkills.length}</Badge>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sharedSkills.map((skill: any) => (
+                <div key={skill.id} className="relative">
+                  <Badge className="absolute top-2 left-2 z-20 bg-indigo-600 text-white">Shared</Badge>
+                  <SkillCard skill={skill} onUpdate={() => {}} />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </main>
       
       <footer className="py-8 bg-white border-t border-gray-100 mt-auto">
