@@ -2,9 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
 import SkillsList from '@/components/SkillsList';
+import SkillCard from '@/components/SkillCard';
 import { api } from '@/utils/api';
+import { invitationApi } from '@/utils/invitationApi';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
@@ -12,6 +15,12 @@ const Index = () => {
   const { data: skills = [], isLoading } = useQuery({
     queryKey: ['skills', user?.id],
     queryFn: api.getSkills,
+    enabled: !!user,
+  });
+
+  const { data: sharedSkills = [] } = useQuery({
+    queryKey: ['shared-skills', user?.id],
+    queryFn: invitationApi.getSharedSkills,
     enabled: !!user,
   });
 
