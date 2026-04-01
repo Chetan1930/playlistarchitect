@@ -7,6 +7,7 @@ import AddPlaylistForm from './AddPlaylistForm';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import InviteDialog from './InviteDialog';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
@@ -149,6 +150,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
           <h2 className="text-2xl font-medium text-gray-900">{skill.name}</h2>
           <p className="text-gray-500">{skill.description}</p>
         </div>
+        <InviteDialog skillId={skillId} skillName={skill.name} />
       </div>
       
       <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
