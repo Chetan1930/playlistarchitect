@@ -76,6 +76,7 @@ const Header = () => {
             <div className="flex items-center space-x-2">
               {user ? (
                 <div className="flex items-center space-x-3">
+                  <InvitationBell />
                   <div className="hidden sm:flex items-center space-x-2 text-sm text-gray-600">
                     <User className="w-4 h-4" />
                     <span className="max-w-[150px] truncate">{user.email}</span>
