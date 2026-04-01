@@ -157,7 +157,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_email: { Args: { _user_id: string }; Returns: string }
+      user_has_skill_share: {
+        Args: { _skill_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_owns_skill: {
+        Args: { _skill_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
