@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
+import InvitationBell from './InvitationBell';
 
 const Header = () => {
   const { user, signOut, loading } = useAuth();
