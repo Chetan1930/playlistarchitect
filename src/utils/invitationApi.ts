@@ -9,6 +9,13 @@ export interface Invitation {
   created_at: string;
   skill_name?: string;
   inviter_email?: string;
+  inviter_name?: string;
+}
+
+export interface Collaborator {
+  user_id: string;
+  created_at: string;
+  collaborator_name?: string;
 }
 
 export const invitationApi = {
@@ -34,13 +41,6 @@ export const invitationApi = {
       throw new Error('Invitation already sent to this email');
     }
 
-    // Check if already shared
-    // We need to check by email -> find user id first
-    const { data: inviteeUser } = await supabase
-      .from('skill_shares')
-      .select('id, user_id')
-      .eq('skill_id', skillId);
-
     // Just send the invitation
     const { error } = await supabase
       .from('skill_invitations')
@@ -61,39 +61,18 @@ export const invitationApi = {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
 
-    const { data, error } = await supabase
-      .from('skill_invitations')
-      .select('*')
-      .eq('invitee_email', user.email!)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    const { data, error } = await (supabase as any).rpc('get_received_invitations_enriched');
 
     if (error) {
       console.error('Error fetching invitations:', error);
       return [];
     }
 
-    // Enrich with skill names and inviter emails
-    const enriched = await Promise.all(
-      (data || []).map(async (inv) => {
-        const [{ data: skill }, { data: inviterEmail }] = await Promise.all([
-          supabase
-            .from('skills')
-            .select('name')
-            .eq('id', inv.skill_id)
-            .maybeSingle(),
-          supabase.rpc('get_user_email', { _user_id: inv.inviter_id }),
-        ]);
-        
-        return {
-          ...inv,
-          skill_name: skill?.name || 'Unknown Skill',
-          inviter_email: inviterEmail || 'Unknown',
-        };
-      })
-    );
-
-    return enriched;
+    return (data || []).map((inv: any) => ({
+      ...inv,
+      skill_name: inv.skill_name || 'Shared skill',
+      inviter_name: inv.inviter_name || 'A collaborator',
+    }));
   },
 
   getSentInvitations: async (skillId: string): Promise<Invitation[]> => {
@@ -227,14 +206,20 @@ export const invitationApi = {
     return skills.filter(Boolean);
   },
 
-  getSkillCollaborators: async (skillId: string) => {
-    const { data, error } = await supabase
-      .from('skill_shares')
-      .select('user_id, created_at')
-      .eq('skill_id', skillId);
+  getSkillCollaborators: async (skillId: string): Promise<Collaborator[]> => {
+    const { data, error } = await (supabase as any).rpc('get_skill_collaborators_enriched', {
+      _skill_id: skillId,
+    });
 
-    if (error) return [];
-    return data || [];
+    if (error) {
+      console.error('Error fetching collaborators:', error);
+      return [];
+    }
+
+    return (data || []).map((collaborator: any) => ({
+      ...collaborator,
+      collaborator_name: collaborator.collaborator_name || 'Collaborator',
+    }));
   },
 
   removeShare: async (skillId: string, userId: string): Promise<boolean> => {
