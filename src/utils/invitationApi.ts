@@ -73,18 +73,22 @@ export const invitationApi = {
       return [];
     }
 
-    // Enrich with skill names
+    // Enrich with skill names and inviter emails
     const enriched = await Promise.all(
       (data || []).map(async (inv) => {
-        const { data: skill } = await supabase
-          .from('skills')
-          .select('name')
-          .eq('id', inv.skill_id)
-          .maybeSingle();
+        const [{ data: skill }, { data: inviterEmail }] = await Promise.all([
+          supabase
+            .from('skills')
+            .select('name')
+            .eq('id', inv.skill_id)
+            .maybeSingle(),
+          supabase.rpc('get_user_email', { _user_id: inv.inviter_id }),
+        ]);
         
         return {
           ...inv,
           skill_name: skill?.name || 'Unknown Skill',
+          inviter_email: inviterEmail || 'Unknown',
         };
       })
     );
