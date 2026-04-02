@@ -130,11 +130,11 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
                   <div key={c.user_id} className="flex items-center justify-between p-2.5 bg-green-500/5 border border-green-500/10 rounded-xl group hover:bg-green-500/10 transition-colors">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white text-[10px] font-bold">
-                        {c.user_id.slice(0, 1).toUpperCase()}
+                          {(c.collaborator_name || 'C')[0].toUpperCase()}
                       </div>
                       <div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5 py-0">Active</Badge>
-                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[160px]">{c.user_id.slice(0, 8)}...</p>
+                          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5 py-0">Editor</Badge>
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[180px]">{c.collaborator_name || 'Collaborator'}</p>
                       </div>
                     </div>
                     <Button

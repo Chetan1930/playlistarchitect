@@ -23,7 +23,7 @@ const InvitationBell = () => {
   const handleAccept = async (invitation: Invitation) => {
     const success = await invitationApi.acceptInvitation(invitation.id);
     if (success) {
-      toast.success(`Joined "${invitation.skill_name}"!`);
+      toast.success(`Joined "${invitation.skill_name || 'shared skill'}"!`);
       queryClient.invalidateQueries({ queryKey: ['received-invitations'] });
       queryClient.invalidateQueries({ queryKey: ['skills'] });
       queryClient.invalidateQueries({ queryKey: ['shared-skills'] });
@@ -80,14 +80,14 @@ const InvitationBell = () => {
               <div key={inv.id} className="p-4 border-b border-border/30 last:border-0 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
-                    {(inv.inviter_email || '?')[0].toUpperCase()}
+                    {(inv.inviter_name || 'A')[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-foreground leading-tight">
-                      {inv.skill_name}
+                      {inv.skill_name || 'Shared skill'}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                      from <span className="font-medium text-foreground/70">{inv.inviter_email || 'Unknown'}</span>
+                      invited by <span className="font-medium text-foreground/70">{inv.inviter_name || 'A collaborator'}</span>
                     </p>
                     <div className="flex gap-2 mt-2.5">
                       <Button

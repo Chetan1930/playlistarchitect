@@ -157,6 +157,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_received_invitations_enriched: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          invitee_email: string
+          inviter_id: string
+          inviter_name: string
+          skill_id: string
+          skill_name: string
+          status: string
+        }[]
+      }
+      get_skill_collaborators_enriched: {
+        Args: { _skill_id: string }
+        Returns: {
+          collaborator_name: string
+          created_at: string
+          user_id: string
+        }[]
+      }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       user_has_skill_share: {
         Args: { _skill_id: string; _user_id: string }
