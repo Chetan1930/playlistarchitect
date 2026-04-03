@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
+import { LinkIcon } from 'lucide-react';
 
 interface AddPlaylistFormProps {
   skillId: string;
@@ -17,22 +17,14 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
-    
     setIsLoading(true);
-    
     try {
-      // Log the url and skillId for debugging
-      console.log(`Adding playlist: ${url} to skill: ${skillId}`);
-      
       const result = await api.addPlaylist(skillId, url);
-      
       if (result) {
-        console.log('Playlist added successfully:', result);
         setUrl('');
         onSuccess();
         toast.success("Playlist added successfully");
       } else {
-        console.error('Failed to add playlist, result was null');
         toast.error("Failed to add playlist. Please check the URL and try again.");
       }
     } catch (error) {
@@ -46,26 +38,24 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <h3 className="text-lg font-medium">Add New Playlist</h3>
-        <p className="text-sm text-gray-500">
-          Paste a YouTube playlist or video URL below to add it to your learning path
+        <h3 className="text-lg font-semibold text-foreground">Add New Playlist</h3>
+        <p className="text-sm text-muted-foreground">
+          Paste a YouTube playlist, video, or any webpage URL to add it to your learning path
         </p>
       </div>
-      
-      <div className="flex space-x-2">
-        <Input
-          type="url"
-          placeholder="https://www.youtube.com/watch?v=..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="flex-1"
-          required
-        />
-        <Button 
-          type="submit" 
-          className="bg-gray-900 hover:bg-gray-800 text-white rounded-full px-6 transition-all shadow-sm hover:shadow-md"
-          disabled={isLoading || !url.trim()}
-        >
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="pl-9"
+            required
+          />
+        </div>
+        <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-primary-foreground rounded-full px-6 transition-all shadow-sm hover:shadow-md" disabled={isLoading || !url.trim()}>
           {isLoading ? 'Adding...' : 'Add'}
         </Button>
       </div>
