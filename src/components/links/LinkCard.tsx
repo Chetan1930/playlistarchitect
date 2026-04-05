@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { ExternalLink, Edit, Trash2, Check, X } from 'lucide-react';
+import { ExternalLink, Edit, Trash2, Check, X, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { LinkItem } from '@/utils/linkUtils';
+import { toast } from 'sonner';
 
 interface LinkCardProps {
   link: LinkItem;
@@ -27,6 +28,13 @@ const LinkCard = ({ link, onDelete, onEdit, categories }: LinkCardProps) => {
     setEditedTitle(link.title);
     setEditedCategory(link.category);
     setIsEditing(false);
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(link.url);
+    toast.success("Link copied to clipboard!");
   };
 
   let domain = '';
@@ -82,10 +90,13 @@ const LinkCard = ({ link, onDelete, onEdit, categories }: LinkCardProps) => {
               {link.category}
             </span>
             <div className="flex gap-0.5">
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground" onClick={() => setIsEditing(true)}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground" onClick={handleCopyLink} title="Copy Link">
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground" onClick={() => setIsEditing(true)} title="Edit Link">
                 <Edit className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive" onClick={() => onDelete(link.id)}>
+              <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive" onClick={() => onDelete(link.id)} title="Delete Link">
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
               <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg text-muted-foreground hover:text-primary" asChild>
