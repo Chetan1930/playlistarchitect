@@ -75,19 +75,13 @@ const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, on
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {canEdit && (
-            <Button variant="outline" size="sm"
-              className={`rounded-full transition-all duration-300 text-xs sm:text-sm h-9 sm:h-9 px-3 sm:px-4 font-medium ${isCompleted ? 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:border-green-800' : 'hover:bg-accent hover:text-accent-foreground'}`}
-              onClick={toggleComplete}>
-              <CheckCircle className="h-4 w-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">{isCompleted ? 'Done' : 'Mark Done'}</span>
-            </Button>
-          )}
-          {!canEdit && isCompleted && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600 dark:text-green-400 bg-green-500/10 px-3 py-1.5 rounded-full">
-              <CheckCircle className="h-3.5 w-3.5" /> Done
-            </span>
-          )}
+          {/* Always allow any user to toggle completion status */}
+          <Button variant="outline" size="sm"
+            className={`rounded-full transition-all duration-300 text-xs sm:text-sm h-9 sm:h-9 px-3 sm:px-4 font-medium ${isCompleted ? 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:border-green-800' : 'hover:bg-accent hover:text-accent-foreground'}`}
+            onClick={toggleComplete}>
+            <CheckCircle className="h-4 w-4 sm:mr-1.5" />
+            <span className="hidden sm:inline">{isCompleted ? 'Done' : 'Mark Done'}</span>
+          </Button>
           
           {canEdit && (
             <>
@@ -130,23 +124,25 @@ const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, on
         </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md rounded-2xl">
-          <DialogHeader><DialogTitle>Edit playlist title</DialogTitle></DialogHeader>
-          <form onSubmit={handleTitleUpdate} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="edit-title" className="text-sm font-medium text-foreground">Playlist Title</label>
-              <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} required className="rounded-xl h-11" />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl h-11 px-6">Cancel</Button>
-              <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-xl h-11 px-6" disabled={isSubmitting || !title.trim()}>
-                {isSubmitting ? 'Updating...' : 'Update Title'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {canEdit && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-md rounded-2xl">
+            <DialogHeader><DialogTitle>Edit playlist title</DialogTitle></DialogHeader>
+            <form onSubmit={handleTitleUpdate} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="edit-title" className="text-sm font-medium text-foreground">Playlist Title</label>
+                <Input id="edit-title" value={title} onChange={(e) => setTitle(e.target.value)} required className="rounded-xl h-11" />
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-xl h-11 px-6">Cancel</Button>
+                <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-xl h-11 px-6" disabled={isSubmitting || !title.trim()}>
+                  {isSubmitting ? 'Updating...' : 'Update Title'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

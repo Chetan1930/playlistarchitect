@@ -29,6 +29,10 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
   
   const playlistCount = skill.playlists.length;
 
+  // Determine permissions based on share state
+  const canEdit = skill.isShared ? skill.accessLevel === 'editor' : true;
+  const canDelete = !skill.isShared; // Only the true owner can delete the whole skill
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -79,12 +83,16 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-card/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1.5">
-            <Button size="icon" variant="secondary" className="h-8 w-8 bg-card/90 hover:bg-card backdrop-blur-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setName(skill.name); setDescription(skill.description); setThumbnailUrl(skill.thumbnailUrl); setOpen(true); }}>
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button size="icon" variant="secondary" className="h-8 w-8 bg-destructive/90 hover:bg-destructive text-destructive-foreground backdrop-blur-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteDialogOpen(true); }}>
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
+            {canEdit && (
+              <Button size="icon" variant="secondary" className="h-8 w-8 bg-card/90 hover:bg-card backdrop-blur-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setName(skill.name); setDescription(skill.description); setThumbnailUrl(skill.thumbnailUrl); setOpen(true); }}>
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            {canDelete && (
+              <Button size="icon" variant="secondary" className="h-8 w-8 bg-destructive/90 hover:bg-destructive text-destructive-foreground backdrop-blur-sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteDialogOpen(true); }}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
         </div>
         
@@ -111,49 +119,53 @@ const SkillCard = ({ skill, onUpdate }: SkillCardProps) => {
         </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader><DialogTitle>Edit skill</DialogTitle></DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label htmlFor="edit-name" className="text-sm font-medium text-foreground">Skill Name</label>
-              <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Web Development" required />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="edit-description" className="text-sm font-medium text-foreground">Description</label>
-              <Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Briefly describe this skill" className="min-h-[100px]" />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="thumbnail" className="text-sm font-medium text-foreground">Thumbnail URL (optional)</label>
-              <Input id="thumbnail" value={thumbnailUrl || ''} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
-              <p className="text-xs text-muted-foreground">Leave blank to use an auto-generated image</p>
-            </div>
-            <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-full">Cancel</Button>
-              <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-full" disabled={isSubmitting || !name.trim()}>
-                {isSubmitting ? 'Updating...' : 'Update Skill'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {canEdit && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader><DialogTitle>Edit skill</DialogTitle></DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label htmlFor="edit-name" className="text-sm font-medium text-foreground">Skill Name</label>
+                <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Web Development" required />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="edit-description" className="text-sm font-medium text-foreground">Description</label>
+                <Textarea id="edit-description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Briefly describe this skill" className="min-h-[100px]" />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="thumbnail" className="text-sm font-medium text-foreground">Thumbnail URL (optional)</label>
+                <Input id="thumbnail" value={thumbnailUrl || ''} onChange={(e) => setThumbnailUrl(e.target.value)} placeholder="https://example.com/image.jpg" />
+                <p className="text-xs text-muted-foreground">Leave blank to use an auto-generated image</p>
+              </div>
+              <DialogFooter className="mt-6">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-full">Cancel</Button>
+                <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-full" disabled={isSubmitting || !name.trim()}>
+                  {isSubmitting ? 'Updating...' : 'Update Skill'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Skill</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{skill.name}"? This will also delete all associated playlists ({playlistCount}). This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction className="bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {canDelete && (
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Skill</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{skill.name}"? This will also delete all associated playlists ({playlistCount}). This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+              <AlertDialogAction className="bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </>
   );
 };
