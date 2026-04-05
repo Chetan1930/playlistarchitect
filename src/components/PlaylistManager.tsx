@@ -106,14 +106,23 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to skills
           </Link>
           <h2 className="text-xl sm:text-2xl font-semibold text-foreground">{skill.name}</h2>
-          <p className="text-muted-foreground text-sm">{skill.description}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground text-sm">{skill.description}</p>
+            {!canEdit && (
+              <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+                <Eye className="w-3 h-3" /> Read Only
+              </span>
+            )}
+          </div>
         </div>
         <InviteDialog skillId={skillId} skillName={skill.name} />
       </div>
       
-      <div className="bg-accent/50 rounded-2xl p-4 sm:p-6 border border-border">
-        <AddPlaylistForm skillId={skillId} onSuccess={handlePlaylistAdded} />
-      </div>
+      {canEdit && (
+        <div className="bg-accent/50 rounded-2xl p-4 sm:p-6 border border-border">
+          <AddPlaylistForm skillId={skillId} onSuccess={handlePlaylistAdded} />
+        </div>
+      )}
       
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-foreground mb-4">Learning Path</h3>
