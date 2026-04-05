@@ -99,6 +99,9 @@ const Header = () => {
                   <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-accent transition-colors">
                     Dashboard
                   </Link>
+                  <Link to="/links" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-accent transition-colors">
+                    <BookmarkIcon className="w-4 h-4" /> LinkVault
+                  </Link>
                 </nav>
                 <div className="p-4 border-t border-border space-y-3">
                   {!loading && (
