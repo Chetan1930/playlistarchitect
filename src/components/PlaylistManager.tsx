@@ -80,69 +80,71 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-16 bg-muted rounded-lg" />
-        <div className="h-60 bg-muted rounded-lg" />
-        <div className="h-16 bg-muted rounded-lg" />
+      <div className="space-y-6 animate-pulse p-4">
+        <div className="h-16 bg-muted rounded-xl" />
+        <div className="h-60 bg-muted rounded-xl" />
+        <div className="h-16 bg-muted rounded-xl" />
       </div>
     );
   }
   
   if (isError || !skill) {
     return (
-      <div className="text-center py-12">
-        <h3 className="text-lg font-semibold text-foreground mb-2">Error loading skill</h3>
-        <p className="text-muted-foreground mb-6">Unable to load the skill details. Please try again later.</p>
-        <Link to="/"><Button>Back to Dashboard</Button></Link>
+      <div className="text-center py-16 px-4">
+        <h3 className="text-xl font-semibold text-foreground mb-3">Error loading skill</h3>
+        <p className="text-muted-foreground mb-8">Unable to load the skill details. Please try again later.</p>
+        <Link to="/"><Button className="rounded-full px-6 py-5 h-auto text-base">Back to SkillUp</Button></Link>
       </div>
     );
   }
   
   return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <Link to="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-2 transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Back to skills
+    <div className="space-y-8 sm:space-y-10">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5">
+        <div className="w-full sm:w-auto">
+          <Link to="/" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-3 transition-colors py-2 sm:py-0">
+            <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to skills
           </Link>
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">{skill.name}</h2>
-          <div className="flex items-center gap-2">
-            <p className="text-muted-foreground text-sm">{skill.description}</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{skill.name}</h2>
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <p className="text-muted-foreground text-sm sm:text-base">{skill.description}</p>
             {!canEdit && (
-              <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
-                <Eye className="w-3 h-3" /> Read Only
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 px-2.5 py-1 rounded-full">
+                <Eye className="w-3.5 h-3.5" /> Read Only
               </span>
             )}
           </div>
         </div>
-        <InviteDialog skillId={skillId} skillName={skill.name} />
+        <div className="w-full sm:w-auto flex justify-start sm:justify-end">
+          <InviteDialog skillId={skillId} skillName={skill.name} />
+        </div>
       </div>
       
       {canEdit && (
-        <div className="bg-accent/50 rounded-2xl p-4 sm:p-6 border border-border">
+        <div className="bg-accent/40 rounded-2xl p-5 sm:p-8 border border-border/60 shadow-sm">
           <AddPlaylistForm skillId={skillId} onSuccess={handlePlaylistAdded} />
         </div>
       )}
       
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Learning Path</h3>
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold text-foreground mb-4">Learning Path</h3>
         
         {skill.playlists.length === 0 ? (
-          <div className="text-center py-12 border-2 border-dashed border-border rounded-xl bg-accent/30">
-            <h4 className="text-lg font-semibold text-foreground mb-2">No playlists yet</h4>
-            <p className="text-muted-foreground max-w-md mx-auto mb-4">
-              Start building your learning path by adding your first playlist above
+          <div className="text-center py-16 px-4 border-2 border-dashed border-border rounded-2xl bg-accent/20">
+            <h4 className="text-xl font-semibold text-foreground mb-3">No playlists yet</h4>
+            <p className="text-muted-foreground max-w-md mx-auto mb-6 text-base">
+              Start building your learning path by adding your first playlist or resource above.
             </p>
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="playlists">
               {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3.5">
                   {skill.playlists.sort((a, b) => a.position - b.position).map((playlist, index) => (
                     <Draggable key={playlist.id} draggableId={playlist.id} index={index}>
                       {(provided, snapshot) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} className={`transition-all duration-150 ${snapshot.isDragging ? 'shadow-lg scale-[1.02]' : ''}`}>
+                        <div ref={provided.innerRef} {...provided.draggableProps} className={`transition-all duration-200 ${snapshot.isDragging ? 'shadow-xl scale-[1.03] z-50 ring-2 ring-primary/20 rounded-xl' : ''}`}>
                           <PlaylistItem
                             playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
                             onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}

@@ -1,6 +1,6 @@
-# CourseTrack - AI Development Rules & Guidelines
+# SkillUp - AI Development Rules & Guidelines
 
-This document outlines the core technologies used in the CourseTrack application and provides strict rules for which libraries to use for specific development tasks. Adhere to these guidelines to maintain a consistent, maintainable, and performant codebase.
+This document outlines the core technologies used in the SkillUp application and provides strict rules for which libraries to use for specific development tasks. Adhere to these guidelines to maintain a consistent, maintainable, and performant codebase.
 
 ## 🚀 Tech Stack
 
