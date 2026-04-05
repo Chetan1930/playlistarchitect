@@ -1,18 +1,15 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { UserPlus, Trash2, Users, Send, Crown, Clock } from 'lucide-react';
+import { UserPlus, Trash2, Users, Send, Crown, Clock, Eye, Edit } from 'lucide-react';
 import { invitationApi } from '@/utils/invitationApi';
 import { toast } from 'sonner';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface InviteDialogProps {
   skillId: string;
@@ -22,6 +19,7 @@ interface InviteDialogProps {
 const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [accessLevel, setAccessLevel] = useState<string>('editor');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
@@ -40,10 +38,9 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
-
     setIsSubmitting(true);
     try {
-      const success = await invitationApi.sendInvitation(skillId, email.trim());
+      const success = await invitationApi.sendInvitation(skillId, email.trim(), accessLevel);
       if (success) {
         toast.success(`Invitation sent to ${email}`);
         setEmail('');
@@ -54,26 +51,17 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
       }
     } catch (error: any) {
       toast.error(error.message || 'Failed to send invitation');
-    } finally {
-      setIsSubmitting(false);
-    }
+    } finally { setIsSubmitting(false); }
   };
 
   const handleDeleteInvitation = async (invitationId: string) => {
     const success = await invitationApi.deleteInvitation(invitationId);
-    if (success) {
-      toast.success('Invitation cancelled');
-      refetchInvitations();
-    }
+    if (success) { toast.success('Invitation cancelled'); refetchInvitations(); }
   };
 
   const handleRemoveCollaborator = async (userId: string) => {
     const success = await invitationApi.removeShare(skillId, userId);
-    if (success) {
-      toast.success('Collaborator removed');
-      refetchCollaborators();
-      queryClient.invalidateQueries({ queryKey: ['skills'] });
-    }
+    if (success) { toast.success('Collaborator removed'); refetchCollaborators(); queryClient.invalidateQueries({ queryKey: ['skills'] }); }
   };
 
   const pendingInvitations = sentInvitations.filter(i => i.status === 'pending');
@@ -97,24 +85,30 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleInvite} className="flex gap-2 mt-4">
-            <Input
-              type="email"
-              placeholder="Enter email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="flex-1 rounded-xl bg-background/80 border-border/50 focus:border-primary/50 placeholder:text-muted-foreground/50"
-            />
-            <Button 
-              type="submit" 
-              disabled={isSubmitting} 
-              size="sm"
-              className="rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-4 shadow-sm"
-            >
-              <Send className="w-3.5 h-3.5 mr-1.5" />
-              {isSubmitting ? 'Sending...' : 'Send'}
-            </Button>
+          <form onSubmit={handleInvite} className="mt-4 space-y-3">
+            <div className="flex gap-2">
+              <Input type="email" placeholder="Enter email address" value={email}
+                onChange={e => setEmail(e.target.value)} required
+                className="flex-1 rounded-xl bg-background/80 border-border/50 focus:border-primary/50 placeholder:text-muted-foreground/50" />
+              <Button type="submit" disabled={isSubmitting} size="sm"
+                className="rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-4 shadow-sm">
+                <Send className="w-3.5 h-3.5 mr-1.5" />
+                {isSubmitting ? '...' : 'Send'}
+              </Button>
+            </div>
+            <Select value={accessLevel} onValueChange={setAccessLevel}>
+              <SelectTrigger className="rounded-xl bg-background/80 border-border/50">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="editor">
+                  <span className="flex items-center gap-2"><Edit className="w-3.5 h-3.5" /> Read & Write</span>
+                </SelectItem>
+                <SelectItem value="viewer">
+                  <span className="flex items-center gap-2"><Eye className="w-3.5 h-3.5" /> Read Only</span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </form>
         </div>
 
@@ -122,27 +116,29 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
           {collaborators.length > 0 && (
             <div>
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Crown className="w-3.5 h-3.5" />
-                Collaborators ({collaborators.length})
+                <Crown className="w-3.5 h-3.5" /> Collaborators ({collaborators.length})
               </h4>
               <div className="space-y-1.5">
-                {collaborators.map((c) => (
+                {collaborators.map(c => (
                   <div key={c.user_id} className="flex items-center justify-between p-2.5 bg-green-500/5 border border-green-500/10 rounded-xl group hover:bg-green-500/10 transition-colors">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center text-white text-[10px] font-bold">
-                          {(c.collaborator_name || 'C')[0].toUpperCase()}
+                        {(c.collaborator_name || 'C')[0].toUpperCase()}
                       </div>
                       <div>
-                          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-1.5 py-0">Editor</Badge>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[180px]">{c.collaborator_name || 'Collaborator'}</p>
+                        <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${
+                          c.access_level === 'viewer'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        }`}>
+                          {c.access_level === 'viewer' ? 'Read Only' : 'Editor'}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[180px]">{c.collaborator_name || 'Collaborator'}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <Button variant="ghost" size="sm"
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg"
-                      onClick={() => handleRemoveCollaborator(c.user_id)}
-                    >
+                      onClick={() => handleRemoveCollaborator(c.user_id)}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -154,11 +150,10 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
           {pendingInvitations.length > 0 && (
             <div>
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                Pending ({pendingInvitations.length})
+                <Clock className="w-3.5 h-3.5" /> Pending ({pendingInvitations.length})
               </h4>
               <div className="space-y-1.5">
-                {pendingInvitations.map((inv) => (
+                {pendingInvitations.map(inv => (
                   <div key={inv.id} className="flex items-center justify-between p-2.5 bg-amber-500/5 border border-amber-500/10 rounded-xl group hover:bg-amber-500/10 transition-colors">
                     <div className="flex items-center gap-2.5">
                       <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white text-[10px] font-bold">
@@ -169,12 +164,9 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
                         <p className="text-xs text-muted-foreground mt-0.5 truncate max-w-[160px]">{inv.invitee_email}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <Button variant="ghost" size="sm"
                       className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all rounded-lg"
-                      onClick={() => handleDeleteInvitation(inv.id)}
-                    >
+                      onClick={() => handleDeleteInvitation(inv.id)}>
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -186,7 +178,7 @@ const InviteDialog = ({ skillId, skillName }: InviteDialogProps) => {
           {collaborators.length === 0 && pendingInvitations.length === 0 && (
             <div className="text-center py-4">
               <Users className="w-8 h-8 text-muted-foreground/20 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">No collaborators yet. Invite someone to get started!</p>
+              <p className="text-xs text-muted-foreground">No collaborators yet. Invite someone!</p>
             </div>
           )}
         </div>

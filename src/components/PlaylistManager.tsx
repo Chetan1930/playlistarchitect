@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/api';
 import { Skill, Playlist } from '@/utils/types';
+import { useAuth } from '@/hooks/useAuth';
 import PlaylistItem from './PlaylistItem';
 import AddPlaylistForm from './AddPlaylistForm';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import InviteDialog from './InviteDialog';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PlaylistManagerProps {
   skillId: string;
@@ -17,11 +19,27 @@ interface PlaylistManagerProps {
 
 const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [canEdit, setCanEdit] = useState(true);
   
   const { data: skill, isLoading, isError, refetch } = useQuery({
     queryKey: ['skill', skillId],
     queryFn: () => api.getSkill(skillId),
   });
+
+  // Check if user owns this skill or has write access
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!user || !skill) return;
+      // If user owns the skill, they can edit
+      const { data: ownsSkill } = await (supabase as any).rpc('user_owns_skill', { _user_id: user.id, _skill_id: skillId });
+      if (ownsSkill) { setCanEdit(true); return; }
+      // Check share access level
+      const { data: hasWrite } = await (supabase as any).rpc('user_has_skill_share_write', { _user_id: user.id, _skill_id: skillId });
+      setCanEdit(!!hasWrite);
+    };
+    checkAccess();
+  }, [user, skill, skillId]);
   
   const handleMovePlaylist = async (playlistId: string, direction: 'up' | 'down') => {
     if (!skill) return;
@@ -88,14 +106,23 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to skills
           </Link>
           <h2 className="text-xl sm:text-2xl font-semibold text-foreground">{skill.name}</h2>
-          <p className="text-muted-foreground text-sm">{skill.description}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground text-sm">{skill.description}</p>
+            {!canEdit && (
+              <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+                <Eye className="w-3 h-3" /> Read Only
+              </span>
+            )}
+          </div>
         </div>
         <InviteDialog skillId={skillId} skillName={skill.name} />
       </div>
       
-      <div className="bg-accent/50 rounded-2xl p-4 sm:p-6 border border-border">
-        <AddPlaylistForm skillId={skillId} onSuccess={handlePlaylistAdded} />
-      </div>
+      {canEdit && (
+        <div className="bg-accent/50 rounded-2xl p-4 sm:p-6 border border-border">
+          <AddPlaylistForm skillId={skillId} onSuccess={handlePlaylistAdded} />
+        </div>
+      )}
       
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-foreground mb-4">Learning Path</h3>
@@ -120,6 +147,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
                             playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
                             onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}
                             onUpdateTitle={handleUpdatePlaylistTitle} dragHandleProps={provided.dragHandleProps}
+                            canEdit={canEdit}
                           />
                         </div>
                       )}

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import SkillDetail from "./pages/SkillDetail";
+import LinkVault from "./pages/LinkVault";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/skill/:id" element={<SkillDetail />} />
+              <Route path="/links" element={<LinkVault />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

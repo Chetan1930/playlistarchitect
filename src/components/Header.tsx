@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Sun, Moon, Menu, X } from 'lucide-react';
+import { LogOut, User, Sun, Moon, Menu, X, BookmarkIcon } from 'lucide-react';
 import InvitationBell from './InvitationBell';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
@@ -41,6 +41,9 @@ const Header = () => {
         <nav className="hidden md:flex items-center gap-2">
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-accent">
             Dashboard
+          </Link>
+          <Link to="/links" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-accent flex items-center gap-1.5">
+            <BookmarkIcon className="w-3.5 h-3.5" /> LinkVault
           </Link>
           <div className="h-5 w-px bg-border mx-1" />
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
@@ -95,6 +98,9 @@ const Header = () => {
                 <nav className="flex-1 p-4 space-y-1">
                   <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-accent transition-colors">
                     Dashboard
+                  </Link>
+                  <Link to="/links" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-foreground hover:bg-accent transition-colors">
+                    <BookmarkIcon className="w-4 h-4" /> LinkVault
                   </Link>
                 </nav>
                 <div className="p-4 border-t border-border space-y-3">

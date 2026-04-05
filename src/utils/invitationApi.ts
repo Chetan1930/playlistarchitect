@@ -16,10 +16,11 @@ export interface Collaborator {
   user_id: string;
   created_at: string;
   collaborator_name?: string;
+  access_level?: string;
 }
 
 export const invitationApi = {
-  sendInvitation: async (skillId: string, inviteeEmail: string): Promise<boolean> => {
+  sendInvitation: async (skillId: string, inviteeEmail: string, accessLevel: string = 'editor'): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
@@ -48,7 +49,8 @@ export const invitationApi = {
         skill_id: skillId,
         inviter_id: user.id,
         invitee_email: inviteeEmail,
-      });
+        access_level: accessLevel,
+      } as any);
 
     if (error) {
       console.error('Error sending invitation:', error);
@@ -113,13 +115,14 @@ export const invitationApi = {
       return false;
     }
 
-    // Create the share
+    // Create the share with access level from invitation
     const { error: shareError } = await supabase
       .from('skill_shares')
       .insert({
         skill_id: invitation.skill_id,
         user_id: user.id,
-      });
+        access_level: (invitation as any).access_level || 'editor',
+      } as any);
 
     if (shareError) {
       console.error('Error creating share:', shareError);
