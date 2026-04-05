@@ -49,7 +49,8 @@ export const invitationApi = {
         skill_id: skillId,
         inviter_id: user.id,
         invitee_email: inviteeEmail,
-      });
+        access_level: accessLevel,
+      } as any);
 
     if (error) {
       console.error('Error sending invitation:', error);
