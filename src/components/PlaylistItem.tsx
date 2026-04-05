@@ -75,47 +75,58 @@ const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, on
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-          <Button variant="outline" size="sm"
-            className={`rounded-full transition-all duration-300 text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 ${isCompleted ? 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:border-green-800' : 'hover:bg-accent hover:text-accent-foreground'}`}
-            onClick={toggleComplete}>
-            <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
-            <span className="hidden sm:inline">{isCompleted ? 'Done' : 'Mark Done'}</span>
-          </Button>
+          {canEdit && (
+            <Button variant="outline" size="sm"
+              className={`rounded-full transition-all duration-300 text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 ${isCompleted ? 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:border-green-800' : 'hover:bg-accent hover:text-accent-foreground'}`}
+              onClick={toggleComplete}>
+              <CheckCircle className="h-3.5 w-3.5 sm:mr-1" />
+              <span className="hidden sm:inline">{isCompleted ? 'Done' : 'Mark Done'}</span>
+            </Button>
+          )}
+          {!canEdit && isCompleted && (
+            <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">
+              <CheckCircle className="h-3 w-3" /> Done
+            </span>
+          )}
           
-          <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 h-7 sm:h-8 w-7 sm:w-8 p-0">
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Playlist</AlertDialogTitle>
-                <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction className="bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={() => { onDelete(playlist.id); setDeleteDialogOpen(false); }}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {canEdit && (
+            <>
+              <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="rounded-full border-destructive/30 text-destructive hover:bg-destructive/10 h-7 sm:h-8 w-7 sm:w-8 p-0">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Playlist</AlertDialogTitle>
+                    <AlertDialogDescription>Are you sure? This action cannot be undone.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction className="bg-destructive hover:bg-destructive/90 text-destructive-foreground" onClick={() => { onDelete(playlist.id); setDeleteDialogOpen(false); }}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-7 sm:h-8 w-7 sm:w-8 p-0">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setOpen(true)}><Edit className="mr-2 h-4 w-4" />Edit Title</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem disabled={isFirst} onClick={() => onMove(playlist.id, 'up')}><ArrowUp className="mr-2 h-4 w-4" />Move Up</DropdownMenuItem>
-              <DropdownMenuItem disabled={isLast} onClick={() => onMove(playlist.id, 'down')}><ArrowDown className="mr-2 h-4 w-4" />Move Down</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-7 sm:h-8 w-7 sm:w-8 p-0">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setOpen(true)}><Edit className="mr-2 h-4 w-4" />Edit Title</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled={isFirst} onClick={() => onMove(playlist.id, 'up')}><ArrowUp className="mr-2 h-4 w-4" />Move Up</DropdownMenuItem>
+                  <DropdownMenuItem disabled={isLast} onClick={() => onMove(playlist.id, 'down')}><ArrowDown className="mr-2 h-4 w-4" />Move Down</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-destructive focus:text-destructive"><Trash2 className="mr-2 h-4 w-4" />Delete</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </div>
       </div>
 
