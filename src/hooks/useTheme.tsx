@@ -11,12 +11,12 @@ const ThemeContext = createContext<ThemeContextType>({ theme: 'light', toggleThe
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('coursetrack-theme');
+    const saved = localStorage.getItem('skillup-theme');
     return (saved as Theme) || 'light';
   });
 
   useEffect(() => {
-    localStorage.setItem('coursetrack-theme', theme);
+    localStorage.setItem('skillup-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 

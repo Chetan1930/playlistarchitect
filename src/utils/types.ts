@@ -1,4 +1,3 @@
-
 export interface Playlist {
   id: string;
   title: string;
@@ -17,4 +16,6 @@ export interface Skill {
   thumbnailUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
+  isShared?: boolean;
+  accessLevel?: string;
 }

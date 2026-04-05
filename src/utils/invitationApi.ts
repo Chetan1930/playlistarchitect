@@ -164,7 +164,7 @@ export const invitationApi = {
 
     const { data: shares, error } = await supabase
       .from('skill_shares')
-      .select('skill_id')
+      .select('skill_id, access_level')
       .eq('user_id', user.id);
 
     if (error || !shares || shares.length === 0) return [];
@@ -193,6 +193,7 @@ export const invitationApi = {
           createdAt: new Date(skill.created_at),
           updatedAt: new Date(skill.updated_at),
           isShared: true,
+          accessLevel: share.access_level,
           playlists: (playlists || []).map(p => ({
             id: p.id,
             title: p.title,

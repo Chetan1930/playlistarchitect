@@ -1,5 +1,4 @@
-
-# CourseTrack - Build Learning Paths
+# SkillUp - Build Learning Paths
 
 A modern web application for organizing and tracking your learning journey. Create skills, build playlists of learning resources, and monitor your progress as you develop new capabilities.
 
@@ -29,7 +28,7 @@ Live project link: https://makeplaylist.netlify.app/
 1. **Clone the repository**
    ```bash
    git clone https://github.com/Chetan1930/playlistarchitect.git
-   cd coursetrack
+   cd skillup
    ```
 
 2. **Install dependencies**
@@ -74,7 +73,7 @@ The built files will be in the `dist` directory, ready for deployment to any sta
 
 ## 📱 Responsive Design
 
-CourseTrack is fully responsive and works seamlessly across:
+SkillUp is fully responsive and works seamlessly across:
 - Desktop computers
 - Tablets
 - Mobile devices
