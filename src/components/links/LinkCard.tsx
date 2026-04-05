@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ExternalLink, Edit, Trash2, Check, X, Copy } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ExternalLink, Edit, Trash2, Check, X, Copy, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -17,7 +17,46 @@ const LinkCard = ({ link, onDelete, onEdit, categories }: LinkCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(link.title);
   const [editedCategory, setEditedCategory] = useState(link.category);
+  
+  // Image handling state
+  const [imgSrc, setImgSrc] = useState<string | undefined>(link.favicon || undefined);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [fallbackLevel, setFallbackLevel] = useState(0);
+
+  let domain = '';
+  try { domain = new URL(link.url).hostname.replace('www.', ''); } catch {}
+
+  useEffect(() => {
+    setImgSrc(link.favicon || undefined);
+    setImageError(false);
+    setImageLoaded(false);
+    setFallbackLevel(0);
+  }, [link.favicon, link.url]);
+
+  const handleImageError = () => {
+    if (!domain) {
+      setImageError(true);
+      setImageLoaded(true);
+      return;
+    }
+
+    // Try DuckDuckGo first if Google fails
+    if (fallbackLevel === 0) {
+      setImgSrc(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
+      setFallbackLevel(1);
+    } 
+    // Try IconHorse if DuckDuckGo fails
+    else if (fallbackLevel === 1) {
+      setImgSrc(`https://icon.horse/icon/${domain}`);
+      setFallbackLevel(2);
+    } 
+    // Give up and use text initial
+    else {
+      setImageError(true);
+      setImageLoaded(true);
+    }
+  };
 
   const handleEdit = () => {
     onEdit(link.id, { title: editedTitle, category: editedCategory });
@@ -37,16 +76,17 @@ const LinkCard = ({ link, onDelete, onEdit, categories }: LinkCardProps) => {
     toast.success("Link copied to clipboard!");
   };
 
-  let domain = '';
-  try { domain = new URL(link.url).hostname.replace('www.', ''); } catch {}
-
   return (
     <div className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-md transition-all duration-200 hover:border-primary/30 flex flex-col h-full">
       {isEditing ? (
         <div className="p-4 space-y-3 flex-1 flex flex-col">
           <div className="flex items-center gap-3">
-            {link.favicon && (
-              <img src={link.favicon} alt="" className="w-6 h-6 rounded-sm object-contain" />
+            {!imageError && imgSrc ? (
+              <img src={imgSrc} alt="" className="w-6 h-6 rounded-sm object-contain" />
+            ) : (
+              <div className="w-6 h-6 rounded-sm bg-accent flex items-center justify-center">
+                <span className="text-xs font-bold text-muted-foreground uppercase">{domain.charAt(0)}</span>
+              </div>
             )}
             <Input value={editedTitle} onChange={e => setEditedTitle(e.target.value)} className="flex-1 rounded-lg" autoFocus />
           </div>
@@ -68,12 +108,19 @@ const LinkCard = ({ link, onDelete, onEdit, categories }: LinkCardProps) => {
       ) : (
         <div className="p-4 flex-1 flex flex-col">
           <a href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-3 group/link cursor-pointer flex-1">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-accent ${!imageLoaded ? 'animate-pulse' : ''}`}>
-              {link.favicon && (
-                <img src={link.favicon} alt="" className="w-7 h-7 object-contain"
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${!imageLoaded && !imageError ? 'animate-pulse bg-accent' : 'bg-accent/50'}`}>
+              {!imageError && imgSrc ? (
+                <img 
+                  src={imgSrc} 
+                  alt="" 
+                  className={`w-6 h-6 object-contain transition-opacity duration-200 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                   onLoad={() => setImageLoaded(true)}
-                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; setImageLoaded(true); }}
+                  onError={handleImageError}
                 />
+              ) : (
+                <span className="text-lg font-bold text-muted-foreground uppercase">
+                  {domain ? domain.charAt(0) : <LinkIcon className="w-4 h-4" />}
+                </span>
               )}
             </div>
             <div className="flex-1 min-w-0 pt-0.5">
