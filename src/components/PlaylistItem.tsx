@@ -20,9 +20,10 @@ export interface PlaylistItemProps {
   onUpdate: () => void;
   onUpdateTitle: (playlistId: string, newTitle: string) => Promise<void>;
   dragHandleProps?: DraggableProvidedDragHandleProps | null;
+  canEdit?: boolean;
 }
 
-const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, onUpdate, onUpdateTitle, dragHandleProps }: PlaylistItemProps) => {
+const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, onUpdate, onUpdateTitle, dragHandleProps, canEdit = true }: PlaylistItemProps) => {
   const [open, setOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [title, setTitle] = useState(playlist.title);
