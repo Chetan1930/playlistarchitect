@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, Sun, Moon, Menu, X } from 'lucide-react';
+import { LogOut, User, Sun, Moon, Menu, X, BookmarkIcon } from 'lucide-react';
 import InvitationBell from './InvitationBell';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
