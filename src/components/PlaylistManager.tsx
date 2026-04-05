@@ -154,29 +154,46 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
             </p>
           </div>
         ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="playlists">
-              {(provided) => (
-                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3.5">
-                  {skill.playlists.sort((a, b) => a.position - b.position).map((playlist, index) => (
-                    <Draggable key={playlist.id} draggableId={playlist.id} index={index}>
-                      {(provided, snapshot) => (
-                        <div ref={provided.innerRef} {...provided.draggableProps} className={`transition-all duration-200 ${snapshot.isDragging ? 'shadow-xl scale-[1.03] z-50 ring-2 ring-primary/20 rounded-xl' : ''}`}>
-                          <PlaylistItem
-                            playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
-                            onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}
-                            onUpdateTitle={handleUpdatePlaylistTitle} dragHandleProps={provided.dragHandleProps}
-                            canEdit={canEdit}
-                          />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+          canEdit ? (
+            // Editor View: Wrapped in Drag Drop functionality
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="playlists">
+                {(provided) => (
+                  <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3.5">
+                    {skill.playlists.sort((a, b) => a.position - b.position).map((playlist, index) => (
+                      <Draggable key={playlist.id} draggableId={playlist.id} index={index}>
+                        {(provided, snapshot) => (
+                          <div ref={provided.innerRef} {...provided.draggableProps} className={`transition-all duration-200 ${snapshot.isDragging ? 'shadow-xl scale-[1.03] z-50 ring-2 ring-primary/20 rounded-xl' : ''}`}>
+                            <PlaylistItem
+                              playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
+                              onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}
+                              onUpdateTitle={handleUpdatePlaylistTitle} dragHandleProps={provided.dragHandleProps}
+                              canEdit={canEdit}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          ) : (
+            // Read-Only View: Simple list mapped without Drag Drop overhead
+            <div className="space-y-3.5">
+              {skill.playlists.sort((a, b) => a.position - b.position).map((playlist, index) => (
+                <div key={playlist.id} className="transition-all duration-200">
+                  <PlaylistItem
+                    playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
+                    onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}
+                    onUpdateTitle={handleUpdatePlaylistTitle} dragHandleProps={null}
+                    canEdit={canEdit}
+                  />
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
