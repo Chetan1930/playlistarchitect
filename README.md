@@ -2,7 +2,7 @@
 
 A modern web application for organizing and tracking your learning journey. Create skills, build playlists of learning resources, and monitor your progress as you develop new capabilities.
 
-Live project link: https://makeplaylist.netlify.app/
+Live project link: https://cmd.chetanchauhan.fun/
 
 ## 🚀 Features
 
