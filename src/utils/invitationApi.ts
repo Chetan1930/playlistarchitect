@@ -20,7 +20,7 @@ export interface Collaborator {
 }
 
 export const invitationApi = {
-  sendInvitation: async (skillId: string, inviteeEmail: string): Promise<boolean> => {
+  sendInvitation: async (skillId: string, inviteeEmail: string, accessLevel: string = 'editor'): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
