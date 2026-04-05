@@ -133,7 +133,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
           </div>
         </div>
         <div className="w-full sm:w-auto flex justify-start sm:justify-end">
-          <InviteDialog skillId={skillId} skillName={skill.name} />
+          {canEdit && <InviteDialog skillId={skillId} skillName={skill.name} />}
         </div>
       </div>
       
