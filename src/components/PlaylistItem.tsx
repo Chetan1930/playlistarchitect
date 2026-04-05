@@ -63,7 +63,7 @@ const PlaylistItem = ({ playlist, skillId, isFirst, isLast, onMove, onDelete, on
 
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1 flex items-center min-w-0">
-          {dragHandleProps && (
+          {canEdit && dragHandleProps && (
             <div {...dragHandleProps} className="mr-2 cursor-grab active:cursor-grabbing opacity-30 hover:opacity-100 transition-opacity p-1 hidden sm:block">
               <GripVertical size={16} />
             </div>
