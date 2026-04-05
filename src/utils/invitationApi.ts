@@ -16,6 +16,7 @@ export interface Collaborator {
   user_id: string;
   created_at: string;
   collaborator_name?: string;
+  access_level?: string;
 }
 
 export const invitationApi = {
