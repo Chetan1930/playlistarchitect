@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/utils/api';
 import { Skill, Playlist } from '@/utils/types';
+import { useAuth } from '@/hooks/useAuth';
 import PlaylistItem from './PlaylistItem';
 import AddPlaylistForm from './AddPlaylistForm';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import InviteDialog from './InviteDialog';
 import { toast } from 'sonner';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PlaylistManagerProps {
   skillId: string;
