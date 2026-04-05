@@ -147,6 +147,7 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
                             playlist={playlist} skillId={skillId} isFirst={index === 0} isLast={index === skill.playlists.length - 1}
                             onMove={handleMovePlaylist} onDelete={handleDeletePlaylist} onUpdate={handlePlaylistUpdated}
                             onUpdateTitle={handleUpdatePlaylistTitle} dragHandleProps={provided.dragHandleProps}
+                            canEdit={canEdit}
                           />
                         </div>
                       )}
