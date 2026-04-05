@@ -19,11 +19,27 @@ interface PlaylistManagerProps {
 
 const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const [canEdit, setCanEdit] = useState(true);
   
   const { data: skill, isLoading, isError, refetch } = useQuery({
     queryKey: ['skill', skillId],
     queryFn: () => api.getSkill(skillId),
   });
+
+  // Check if user owns this skill or has write access
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!user || !skill) return;
+      // If user owns the skill, they can edit
+      const { data: ownsSkill } = await (supabase as any).rpc('user_owns_skill', { _user_id: user.id, _skill_id: skillId });
+      if (ownsSkill) { setCanEdit(true); return; }
+      // Check share access level
+      const { data: hasWrite } = await (supabase as any).rpc('user_has_skill_share_write', { _user_id: user.id, _skill_id: skillId });
+      setCanEdit(!!hasWrite);
+    };
+    checkAccess();
+  }, [user, skill, skillId]);
   
   const handleMovePlaylist = async (playlistId: string, direction: 'up' | 'down') => {
     if (!skill) return;
