@@ -115,13 +115,14 @@ export const invitationApi = {
       return false;
     }
 
-    // Create the share
+    // Create the share with access level from invitation
     const { error: shareError } = await supabase
       .from('skill_shares')
       .insert({
         skill_id: invitation.skill_id,
         user_id: user.id,
-      });
+        access_level: (invitation as any).access_level || 'editor',
+      } as any);
 
     if (shareError) {
       console.error('Error creating share:', shareError);
