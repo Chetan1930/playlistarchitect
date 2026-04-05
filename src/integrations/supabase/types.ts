@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      links: {
+        Row: {
+          category: string
+          created_at: string
+          favicon: string | null
+          id: string
+          title: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          favicon?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          favicon?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       playlists: {
         Row: {
           created_at: string
@@ -60,6 +93,7 @@ export type Database = {
       }
       skill_invitations: {
         Row: {
+          access_level: string
           created_at: string
           id: string
           invitee_email: string
@@ -68,6 +102,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          access_level?: string
           created_at?: string
           id?: string
           invitee_email: string
@@ -76,6 +111,7 @@ export type Database = {
           status?: string
         }
         Update: {
+          access_level?: string
           created_at?: string
           id?: string
           invitee_email?: string
@@ -95,18 +131,21 @@ export type Database = {
       }
       skill_shares: {
         Row: {
+          access_level: string
           created_at: string
           id: string
           skill_id: string
           user_id: string
         }
         Insert: {
+          access_level?: string
           created_at?: string
           id?: string
           skill_id: string
           user_id: string
         }
         Update: {
+          access_level?: string
           created_at?: string
           id?: string
           skill_id?: string
@@ -173,6 +212,7 @@ export type Database = {
       get_skill_collaborators_enriched: {
         Args: { _skill_id: string }
         Returns: {
+          access_level: string
           collaborator_name: string
           created_at: string
           user_id: string
@@ -180,6 +220,10 @@ export type Database = {
       }
       get_user_email: { Args: { _user_id: string }; Returns: string }
       user_has_skill_share: {
+        Args: { _skill_id: string; _user_id: string }
+        Returns: boolean
+      }
+      user_has_skill_share_write: {
         Args: { _skill_id: string; _user_id: string }
         Returns: boolean
       }
