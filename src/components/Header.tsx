@@ -42,6 +42,9 @@ const Header = () => {
           <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-accent">
             Dashboard
           </Link>
+          <Link to="/links" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-accent flex items-center gap-1.5">
+            <BookmarkIcon className="w-3.5 h-3.5" /> LinkVault
+          </Link>
           <div className="h-5 w-px bg-border mx-1" />
           <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
