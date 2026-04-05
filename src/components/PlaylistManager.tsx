@@ -20,7 +20,10 @@ interface PlaylistManagerProps {
 const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const [canEdit, setCanEdit] = useState(true);
+  
+  // Start as false to prevent flashing editor tools to unauthorized users
+  const [canEdit, setCanEdit] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
   
   const { data: skill, isLoading, isError, refetch } = useQuery({
     queryKey: ['skill', skillId],
@@ -30,15 +33,28 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   // Check if user owns this skill or has write access
   useEffect(() => {
     const checkAccess = async () => {
-      if (!user || !skill) return;
+      if (!user || !skill) {
+        if (skill) setAccessChecked(true);
+        return;
+      }
+      
       // If user owns the skill, they can edit
       const { data: ownsSkill } = await (supabase as any).rpc('user_owns_skill', { _user_id: user.id, _skill_id: skillId });
-      if (ownsSkill) { setCanEdit(true); return; }
+      if (ownsSkill) { 
+        setCanEdit(true); 
+        setAccessChecked(true);
+        return; 
+      }
+      
       // Check share access level
       const { data: hasWrite } = await (supabase as any).rpc('user_has_skill_share_write', { _user_id: user.id, _skill_id: skillId });
       setCanEdit(!!hasWrite);
+      setAccessChecked(true);
     };
-    checkAccess();
+    
+    if (skill) {
+      checkAccess();
+    }
   }, [user, skill, skillId]);
   
   const handleMovePlaylist = async (playlistId: string, direction: 'up' | 'down') => {
@@ -78,7 +94,8 @@ const PlaylistManager = ({ skillId }: PlaylistManagerProps) => {
   const handlePlaylistAdded = () => { refetch(); queryClient.invalidateQueries({ queryKey: ['skills'] }); };
   const handlePlaylistUpdated = () => { refetch(); queryClient.invalidateQueries({ queryKey: ['skills'] }); };
   
-  if (isLoading) {
+  // Show loading skeleton if the skill is loading OR if we're still checking permissions
+  if (isLoading || (skill && !accessChecked)) {
     return (
       <div className="space-y-6 animate-pulse p-4">
         <div className="h-16 bg-muted rounded-xl" />

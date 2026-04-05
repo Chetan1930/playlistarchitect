@@ -45,9 +45,6 @@ const LinkVault = () => {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      <div className="hidden sm:block absolute top-20 right-[5%] w-64 h-64 rounded-full bg-primary/5 animate-pulse-subtle" />
-      <div className="hidden sm:block absolute top-40 left-[10%] w-32 h-32 rounded-full bg-accent animate-float" />
-
       <Header />
 
       <main className="container mx-auto px-4 sm:px-6 pt-20 pb-16">
