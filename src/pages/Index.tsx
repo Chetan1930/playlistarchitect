@@ -1,19 +1,31 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '@/components/Header';
-import SkillsList from '@/components/SkillsList';
 import SkillCard from '@/components/SkillCard';
 import { api } from '@/utils/api';
 import { invitationApi } from '@/utils/invitationApi';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
+import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
 
+/**
+ * Youdemy-inspired dashboard:
+ *  - "Today's lesson" hero card resuming the last-viewed skill.
+ *  - "New course from a URL" quick-import row that creates a skill from a link.
+ *  - "My library" grid of skills, plus optional "Shared with you" section.
+ * When signed out, shows the marketing hero from the reference site.
+ */
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  
-  const { data: skills = [], isLoading } = useQuery({
+  const navigate = useNavigate();
+
+  const [quickUrl, setQuickUrl] = useState('');
+  const [isConverting, setIsConverting] = useState(false);
+
+  const { data: skills = [], isLoading, refetch } = useQuery({
     queryKey: ['skills', user?.id],
     queryFn: api.getSkills,
     enabled: !!user,
@@ -27,76 +39,231 @@ const Index = () => {
 
   const hasSkills = skills.length > 0;
 
+  // Most recent skill = "today's lesson" candidate
+  const todaysLesson = hasSkills
+    ? [...skills].sort(
+        (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )[0]
+    : null;
+  const nextPlaylist =
+    todaysLesson && todaysLesson.playlists.length > 0
+      ? [...todaysLesson.playlists]
+          .sort((a, b) => a.position - b.position)
+          .find((p) => !p.isCompleted) ?? todaysLesson.playlists[0]
+      : null;
+  const completedCount = todaysLesson?.playlists.filter((p) => p.isCompleted).length ?? 0;
+  const totalCount = todaysLesson?.playlists.length ?? 0;
+  const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const handleQuickConvert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = quickUrl.trim();
+    if (!url) return;
+    setIsConverting(true);
+    try {
+      // Derive a working title from the URL host
+      let name = 'New course';
+      try {
+        const host = new URL(url).hostname.replace(/^www\./, '');
+        const stem = host.split('.')[0];
+        name = stem.charAt(0).toUpperCase() + stem.slice(1) + ' course';
+      } catch {
+        /* fall back to default */
+      }
+
+      const skill = await api.createSkill(name, 'Imported from a link');
+      const added = await api.addPlaylist(skill.id, url);
+      if (!added) throw new Error('Failed to import link');
+
+      toast.success('Course created');
+      setQuickUrl('');
+      refetch();
+      navigate(`/skill/${skill.id}`);
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not convert that link. Please try again.');
+    } finally {
+      setIsConverting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative">
+      {/* Warm amber glow behind the top of the page */}
+      <div aria-hidden className="absolute inset-x-0 top-0 h-[420px] amber-glow pointer-events-none" />
+
       <Header />
-      
-      <main className="container mx-auto px-4 sm:px-6 pt-24 pb-16 flex-1">
+
+      <main className="relative flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-24 pb-20">
+        {/* ============ Signed-out marketing hero ============ */}
         {!authLoading && !user && (
-          <section className="mb-16 mt-4">
-            <div className="max-w-3xl mx-auto text-center py-12 sm:py-20 px-2">
-              <div className="inline-flex items-center gap-2 bg-accent text-accent-foreground rounded-full px-4 py-1.5 text-sm font-medium mb-6 animate-fade-in">
-                <Sparkles className="w-4 h-4" />
-                Organize your learning journey
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground mb-6 leading-tight animate-slide-in tracking-tight">
-                Track courses, playlists & resources in one place
-              </h1>
-              <p className="text-base sm:text-lg text-muted-foreground mb-10 max-w-xl mx-auto animate-fade-in leading-relaxed">
-                Create personalized learning paths by organizing your favorite courses and playlists. Sign in to sync your progress across devices.
-              </p>
-              <Link to="/auth">
-                <Button className="px-8 py-6 h-auto bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-primary-foreground rounded-full text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300 animate-fade-in w-full sm:w-auto">
-                  Get Started <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
+          <section className="pt-6 sm:pt-16 pb-16 text-center max-w-3xl mx-auto">
+            <div className="eyebrow inline-flex items-center gap-2 justify-center mb-6">
+              <Sparkles className="w-3 h-3" /> Free forever · No credit card
             </div>
+            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] text-foreground mb-6">
+              Turn any playlist into a course<br />
+              <span className="text-primary">you'll actually finish.</span>
+            </h1>
+            <p className="text-base sm:text-lg text-muted-foreground mb-10 leading-relaxed max-w-xl mx-auto">
+              Paste a link. Get a tracked mini-course. Earn XP for every minute you watch,
+              capture notes timestamped to the second, and climb a global leaderboard of
+              weekly hours.
+            </p>
+            <Link to="/auth">
+              <Button className="h-12 px-7 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium text-base">
+                Convert <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </Link>
+            <p className="mt-4 text-xs text-muted-foreground">
+              · No credit card · Works with any public playlist
+            </p>
           </section>
         )}
 
-        {user && !hasSkills && !isLoading && (
-          <section className="mb-12 mt-4">
-            <div className="max-w-3xl mx-auto text-center py-10 px-4">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
-                Welcome to SkillUp
-              </h1>
-              <p className="text-base sm:text-lg text-muted-foreground mb-8">
-                Start by creating your first skill category to organize your learning resources.
-              </p>
-            </div>
-          </section>
-        )}
-        
-        {user && <SkillsList />}
-        
-        {user && sharedSkills.length > 0 && (
-          <section className="mt-16">
-            <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Shared with you</h2>
-              <Badge variant="secondary" className="text-sm px-2.5 py-0.5">{sharedSkills.length}</Badge>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {sharedSkills.map((skill: any) => (
-                <div key={skill.id} className="relative">
-                  <Badge className="absolute top-3 left-3 z-20 bg-primary text-primary-foreground shadow-sm">Shared</Badge>
-                  <SkillCard skill={skill} onUpdate={() => {}} />
+        {/* ============ Signed-in dashboard ============ */}
+        {user && (
+          <>
+            {/* Today's Lesson hero — only when there is something to resume */}
+            {todaysLesson && nextPlaylist && (
+              <section className="mb-10">
+                <Link
+                  to={`/skill/${todaysLesson.id}`}
+                  className="group block rounded-lg border border-border hover:border-primary/40 bg-card overflow-hidden transition-colors"
+                >
+                  <div className="p-6 sm:p-8">
+                    <p className="eyebrow mb-4">Today's Lesson</p>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground mb-3">
+                      {todaysLesson.name}
+                    </p>
+                    <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-foreground mb-6 group-hover:text-primary transition-colors leading-tight">
+                      {nextPlaylist.title}
+                    </h2>
+
+                    {/* Progress bar row */}
+                    <div className="flex items-center gap-4">
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {completedCount}/{totalCount} videos
+                      </span>
+                      <div className="flex-1 h-1 bg-border/60 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-500"
+                          style={{ width: `${percent}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-8 text-right">{percent}%</span>
+                      <span className="inline-flex items-center gap-1 rounded-md bg-primary/15 text-primary text-xs font-medium px-2.5 py-1 shrink-0">
+                        Resume <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </section>
+            )}
+
+            {/* New course from a URL */}
+            <section className="mb-14">
+              <div className="rounded-lg border border-border bg-card p-6 sm:p-7">
+                <p className="eyebrow mb-2">New course from a URL</p>
+                <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
+                  <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
+                  Works with YouTube playlists, videos, and any public webpage.
+                </p>
+                <form
+                  onSubmit={handleQuickConvert}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <Input
+                    type="url"
+                    value={quickUrl}
+                    onChange={(e) => setQuickUrl(e.target.value)}
+                    placeholder="paste a youtube playlist or video link…"
+                    className="flex-1 h-11 rounded-md bg-background border-border text-sm placeholder:text-muted-foreground/60"
+                    disabled={isConverting}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isConverting || !quickUrl.trim()}
+                    className="h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+                  >
+                    {isConverting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Converting…
+                      </span>
+                    ) : (
+                      'Convert to course'
+                    )}
+                  </Button>
+                </form>
+              </div>
+            </section>
+
+            {/* My library */}
+            <section>
+              <div className="flex items-end justify-between mb-6 pb-3 border-b border-border/60">
+                <h2 className="font-display text-2xl sm:text-3xl text-foreground">My library</h2>
+                <span className="text-xs text-muted-foreground">
+                  {skills.length} {skills.length === 1 ? 'course' : 'courses'}
+                </span>
+              </div>
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-[260px] rounded-lg bg-card border border-border animate-pulse" />
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
+              ) : !hasSkills ? (
+                <div className="rounded-lg border border-dashed border-border bg-card/50 py-16 px-6 text-center">
+                  <h3 className="font-display text-2xl text-foreground mb-2">Your library is empty</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    Paste any YouTube playlist link above to create your first tracked course.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {skills.map((skill) => (
+                    <SkillCard key={skill.id} skill={skill} onUpdate={() => refetch()} />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {sharedSkills.length > 0 && (
+              <section className="mt-16">
+                <div className="flex items-end justify-between mb-6 pb-3 border-b border-border/60">
+                  <h2 className="font-display text-2xl sm:text-3xl text-foreground">Shared with you</h2>
+                  <span className="text-xs text-muted-foreground">{sharedSkills.length}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  {sharedSkills.map((skill: any) => (
+                    <div key={skill.id} className="relative">
+                      <span className="absolute top-3 left-3 z-20 eyebrow bg-background/80 backdrop-blur-sm rounded px-2 py-0.5">
+                        Shared
+                      </span>
+                      <SkillCard skill={skill} onUpdate={() => {}} />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
-      
-      <footer className="py-8 bg-card border-t border-border mt-auto">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} SkillUp. Created by Chetan Chauhan.
-            </p>
-            <div className="flex space-x-6">
-              <a href="#" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-2 sm:p-0">Privacy</a>
-              <a href="https://www.linkedin.com/in/chetan71/" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors p-2 sm:p-0">Contact</a>
-            </div>
+
+      <footer className="border-t border-border/60 py-6 mt-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} SkillUp · Created by Chetan Chauhan</p>
+          <div className="flex gap-5">
+            <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
+            <a
+              href="https://www.linkedin.com/in/chetan71/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors"
+            >
+              Contact
+            </a>
           </div>
         </div>
       </footer>

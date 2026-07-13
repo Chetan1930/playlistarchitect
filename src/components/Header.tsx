@@ -8,6 +8,12 @@ import InvitationBell from './InvitationBell';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 
+/**
+ * Youdemy-inspired minimal header:
+ * - Warm amber "§" mark + italic serif wordmark on left
+ * - Text-only nav (SkillUp / LinkVault) with amber underline for active route
+ * - Theme + notifications + auth actions on the right
+ */
 const Header = () => {
   const { user, signOut, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -23,140 +29,151 @@ const Header = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
+  const navLinkClass = (active: boolean) =>
+    cn(
+      'relative text-sm transition-colors px-1 py-1',
+      active ? 'text-foreground font-medium' : 'text-muted-foreground hover:text-foreground',
+      active &&
+        "after:content-[''] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-px after:bg-primary"
+    );
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-effect transition-all duration-300 border-b border-border/40">
-      <div className="container mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-md">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2.5 group" onClick={() => setMobileOpen(false)}>
-          <div className="w-9 h-9 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-4.5 h-4.5">
-              <path d="M5 3a2 2 0 0 0-2 2" /><path d="M19 3a2 2 0 0 1 2 2" /><path d="M21 19a2 2 0 0 1-2 2" /><path d="M5 21a2 2 0 0 1-2-2" />
-              <path d="M9 3h1" /><path d="M9 21h1" /><path d="M14 3h1" /><path d="M14 21h1" />
-              <path d="M3 9v1" /><path d="M21 9v1" /><path d="M3 14v1" /><path d="M21 14v1" />
-              <rect x="7" y="7" width="10" height="10" rx="2" />
-            </svg>
-          </div>
-          <h1 className="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 group"
+          onClick={() => setMobileOpen(false)}
+        >
+          <span className="w-8 h-8 rounded-lg border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-display text-lg leading-none">
+            §
+          </span>
+          <span className="font-display italic text-lg sm:text-xl text-foreground group-hover:text-primary transition-colors">
             SkillUp
-          </h1>
+          </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-2">
-          <Link 
-            to="/" 
-            className={cn(
-              "text-sm font-medium transition-colors px-3 py-2 rounded-lg flex items-center gap-1.5",
-              isActive('/') 
-                ? "bg-primary/10 text-primary font-semibold" 
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
-          >
-            SkillUp
+        <nav className="hidden md:flex items-center gap-6">
+          <Link to="/" className={navLinkClass(isActive('/'))}>
+            Library
           </Link>
-          <Link 
-            to="/links" 
-            className={cn(
-              "text-sm font-medium transition-colors px-3 py-2 rounded-lg flex items-center gap-1.5",
-              isActive('/links') 
-                ? "bg-primary/10 text-primary font-semibold" 
-                : "text-muted-foreground hover:text-foreground hover:bg-accent"
-            )}
-          >
-            <BookmarkIcon className="w-3.5 h-3.5" /> LinkVault
+          <Link to="/links" className={navLinkClass(isActive('/links'))}>
+            LinkVault
           </Link>
-          <div className="h-5 w-px bg-border mx-1" />
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full">
+
+          <div className="h-4 w-px bg-border mx-1" />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full h-8 w-8 text-muted-foreground hover:text-foreground"
+            aria-label="Toggle theme"
+          >
             {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
           </Button>
           {!loading && user && <InvitationBell />}
-          {!loading && (
-            user ? (
-              <div className="flex items-center gap-2 ml-1">
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-accent rounded-full px-3 py-1.5">
+
+          {!loading &&
+            (user ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-1.5 text-xs text-muted-foreground">
                   <User className="w-3.5 h-3.5" />
-                  <span className="max-w-[130px] truncate text-xs">{user.email}</span>
+                  <span className="max-w-[160px] truncate">{user.email}</span>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleSignOut} className="rounded-full text-muted-foreground hover:text-destructive">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  className="rounded-full h-8 w-8 text-muted-foreground hover:text-destructive"
+                  aria-label="Sign out"
+                >
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
               <Link to="/auth">
-                <Button size="sm" className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-primary-foreground rounded-full px-5">
+                <Button
+                  size="sm"
+                  className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium px-4"
+                >
                   Sign in
                 </Button>
               </Link>
-            )
-          )}
+            ))}
         </nav>
 
         {/* Mobile nav */}
-        <div className="flex items-center gap-1 sm:gap-2 md:hidden">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} className="rounded-full w-10 h-10">
+        <div className="flex items-center gap-1 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full w-10 h-10 text-muted-foreground"
+            aria-label="Toggle theme"
+          >
             {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </Button>
           {!loading && user && <InvitationBell />}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full w-10 h-10">
+              <Button variant="ghost" size="icon" className="rounded-full w-10 h-10" aria-label="Menu">
                 <Menu className="w-6 h-6" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[85vw] sm:w-80 p-0 border-l border-border">
+            <SheetContent side="right" className="w-[85vw] sm:w-80 p-0 border-l border-border bg-background">
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-primary to-purple-600 rounded-xl flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                        <rect x="7" y="7" width="10" height="10" rx="2" />
-                      </svg>
-                    </div>
-                    <span className="text-xl font-bold text-foreground">SkillUp</span>
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-9 h-9 rounded-lg border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-display text-xl">
+                      §
+                    </span>
+                    <span className="font-display italic text-xl text-foreground">SkillUp</span>
                   </div>
                 </div>
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                  <Link 
-                    to="/" 
-                    onClick={() => setMobileOpen(false)} 
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+                  <Link
+                    to="/"
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium transition-colors",
-                      isActive('/') ? "bg-primary/10 text-primary" : "text-foreground hover:bg-accent active:bg-accent/80"
+                      'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base transition-colors',
+                      isActive('/') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent'
                     )}
                   >
-                    SkillUp
+                    Library
                   </Link>
-                  <Link 
-                    to="/links" 
-                    onClick={() => setMobileOpen(false)} 
+                  <Link
+                    to="/links"
+                    onClick={() => setMobileOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-4 rounded-xl text-base font-medium transition-colors",
-                      isActive('/links') ? "bg-primary/10 text-primary" : "text-foreground hover:bg-accent active:bg-accent/80"
+                      'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base transition-colors',
+                      isActive('/links') ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-accent'
                     )}
                   >
                     <BookmarkIcon className="w-5 h-5" /> LinkVault
                   </Link>
                 </nav>
-                <div className="p-6 border-t border-border space-y-4 pb-8">
-                  {!loading && (
-                    user ? (
+                <div className="p-6 border-t border-border space-y-4">
+                  {!loading &&
+                    (user ? (
                       <>
-                        <div className="flex items-center gap-3 px-4 py-3 bg-accent rounded-xl">
-                          <User className="w-5 h-5 text-muted-foreground" />
-                          <span className="text-sm font-medium truncate text-foreground">{user.email}</span>
+                        <div className="flex items-center gap-3 px-4 py-3 bg-accent rounded-lg">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span className="text-sm truncate text-foreground">{user.email}</span>
                         </div>
-                        <Button variant="outline" className="w-full justify-start gap-2 h-12 text-base" onClick={handleSignOut}>
-                          <LogOut className="w-5 h-5" /> Sign out
+                        <Button variant="outline" className="w-full justify-start gap-2 h-11" onClick={handleSignOut}>
+                          <LogOut className="w-4 h-4" /> Sign out
                         </Button>
                       </>
                     ) : (
                       <Link to="/auth" onClick={() => setMobileOpen(false)}>
-                        <Button className="w-full h-12 text-base bg-gradient-to-r from-primary to-purple-600 text-primary-foreground">
+                        <Button className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90">
                           Sign in
                         </Button>
                       </Link>
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
             </SheetContent>

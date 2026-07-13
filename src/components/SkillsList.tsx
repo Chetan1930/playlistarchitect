@@ -10,17 +10,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
 
+/**
+ * Standalone "My library" surface used inside pages that want the skill grid
+ * without the dashboard hero. The main Index page renders its own library
+ * section, so this component is mostly used in secondary contexts.
+ */
 const SkillsList = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const { data: skills = [], isLoading, refetch } = useQuery({
     queryKey: ['skills'],
     queryFn: api.getSkills,
   });
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -31,75 +36,84 @@ const SkillsList = () => {
       setName('');
       setDescription('');
       refetch();
-      toast.success("Skill created successfully");
+      toast.success('Skill created');
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create skill. Please try again.");
+      toast.error('Failed to create skill');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="w-full">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+      <div className="flex items-end justify-between mb-6 pb-3 border-b border-border/60">
         <div>
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">Your Skills</h2>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Organize your learning journey by adding skills and courses
-          </p>
+          <h2 className="font-display text-2xl sm:text-3xl text-foreground">My library</h2>
+          <p className="text-xs text-muted-foreground mt-1">Every course you've imported</p>
         </div>
-        <Button onClick={() => setOpen(true)} className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-primary-foreground rounded-full px-5 transition-all duration-200 shadow-sm hover:shadow-md">
-          <Plus className="w-4 h-4 mr-1.5" /> Add New Skill
+        <Button
+          onClick={() => setOpen(true)}
+          className="rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+        >
+          <Plus className="w-4 h-4 mr-1.5" /> New skill
         </Button>
       </div>
-      
+
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-[280px] rounded-2xl bg-muted animate-pulse" />
+            <div key={i} className="h-[260px] rounded-lg bg-card border border-border animate-pulse" />
           ))}
         </div>
       ) : skills.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border-2 border-dashed border-border bg-accent/30">
-          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mb-4">
-            <Plus className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No skills yet</h3>
-          <p className="text-sm text-muted-foreground text-center max-w-md mb-6">
-            Start your learning journey by adding your first skill or topic
+        <div className="rounded-lg border border-dashed border-border bg-card/50 py-16 px-6 text-center">
+          <h3 className="font-display text-2xl text-foreground mb-2">Your library is empty</h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto mb-6">
+            Add your first skill to start collecting playlists into a tracked course.
           </p>
-          <Button onClick={() => setOpen(true)} className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-full px-6">
-            Add Your First Skill
+          <Button
+            onClick={() => setOpen(true)}
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
+          >
+            Add your first skill
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {skills.map((skill: Skill) => (
             <SkillCard key={skill.id} skill={skill} onUpdate={() => refetch()} />
           ))}
         </div>
       )}
-      
+
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-card border-border">
           <DialogHeader>
-            <DialogTitle>Add new skill</DialogTitle>
-            <DialogDescription>Create a new skill or topic that you want to learn</DialogDescription>
+            <DialogTitle className="font-display italic text-2xl">Add new skill</DialogTitle>
+            <DialogDescription>Create a topic you want to track videos and notes for.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium text-foreground">Skill Name</label>
+              <label htmlFor="name" className="eyebrow">
+                Skill name
+              </label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g., Web Development" required />
             </div>
             <div className="space-y-2">
-              <label htmlFor="description" className="text-sm font-medium text-foreground">Description</label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Briefly describe this skill" className="min-h-[100px]" />
+              <label htmlFor="description" className="eyebrow">
+                Description
+              </label>
+              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="min-h-[100px]" />
             </div>
             <DialogFooter className="mt-6">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="rounded-full">Cancel</Button>
-              <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 text-primary-foreground rounded-full" disabled={isSubmitting || !name.trim()}>
-                {isSubmitting ? 'Creating...' : 'Create Skill'}
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button
+                type="submit"
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                disabled={isSubmitting || !name.trim()}
+              >
+                {isSubmitting ? 'Creating…' : 'Create'}
               </Button>
             </DialogFooter>
           </form>

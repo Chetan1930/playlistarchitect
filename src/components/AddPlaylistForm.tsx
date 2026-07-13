@@ -3,17 +3,21 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/utils/api';
 import { toast } from 'sonner';
-import { LinkIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 interface AddPlaylistFormProps {
   skillId: string;
   onSuccess: () => void;
 }
 
+/**
+ * Amber quick-import row for adding a new step to a course. Matches the
+ * Youdemy "New course from a URL" pattern but scoped to a single skill.
+ */
 const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
@@ -23,40 +27,49 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
       if (result) {
         setUrl('');
         onSuccess();
-        toast.success("Playlist added successfully");
+        toast.success('Step added');
       } else {
-        toast.error("Failed to add playlist. Please check the URL and try again.");
+        toast.error('Could not import that link');
       }
     } catch (error) {
       console.error('Error adding playlist:', error);
-      toast.error("An unexpected error occurred. Please try again.");
+      toast.error('Something went wrong');
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold text-foreground">Add New Playlist</h3>
-        <p className="text-sm text-muted-foreground">
-          Paste a YouTube playlist, video, or any webpage URL to add it to your learning path
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <div>
+        <p className="eyebrow mb-1.5">Add a step to this course</p>
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
+          YouTube playlist, video, or any public webpage.
         </p>
       </div>
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            type="url"
-            placeholder="https://www.youtube.com/watch?v=..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="pl-9"
-            required
-          />
-        </div>
-        <Button type="submit" className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90 text-primary-foreground rounded-full px-6 transition-all shadow-sm hover:shadow-md" disabled={isLoading || !url.trim()}>
-          {isLoading ? 'Adding...' : 'Add'}
+      <div className="flex flex-col sm:flex-row gap-2.5">
+        <Input
+          type="url"
+          placeholder="paste a youtube playlist or video link…"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          className="flex-1 h-11 rounded-md bg-background border-border text-sm placeholder:text-muted-foreground/60"
+          required
+          disabled={isLoading}
+        />
+        <Button
+          type="submit"
+          className="h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+          disabled={isLoading || !url.trim()}
+        >
+          {isLoading ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Adding…
+            </span>
+          ) : (
+            'Add step'
+          )}
         </Button>
       </div>
     </form>
