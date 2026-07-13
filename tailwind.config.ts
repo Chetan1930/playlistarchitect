@@ -20,7 +20,9 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['-apple-system', 'BlinkMacSystemFont', 'San Francisco', 'Helvetica Neue', 'Helvetica', 'sans-serif'],
+				sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+				serif: ['Instrument Serif', 'Times New Roman', 'Georgia', 'serif'],
+				display: ['Instrument Serif', 'Times New Roman', 'Georgia', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',

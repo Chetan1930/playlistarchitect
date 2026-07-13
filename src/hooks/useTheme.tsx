@@ -7,12 +7,12 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
-const ThemeContext = createContext<ThemeContextType>({ theme: 'light', toggleTheme: () => {} });
+const ThemeContext = createContext<ThemeContextType>({ theme: 'dark', toggleTheme: () => {} });
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('skillup-theme');
-    return (saved as Theme) || 'light';
+    return (saved as Theme) || 'dark';
   });
 
   useEffect(() => {
