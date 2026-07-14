@@ -33,6 +33,42 @@ const isYouTubeUrl = (url: string): boolean => {
   return url.includes('youtube.com') || url.includes('youtu.be');
 };
 
+// Check if URL is a YouTube playlist URL (has ?list= parameter)
+const isYouTubePlaylistUrl = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    return isYouTubeUrl(url) && !!u.searchParams.get('list');
+  } catch {
+    return false;
+  }
+};
+
+// Fetch all videos of a YouTube playlist via edge function
+const fetchYouTubePlaylistVideos = async (url: string): Promise<
+  | { title: string; videos: Array<{ title: string; url: string; thumbnailUrl: string; description: string }> }
+  | null
+> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-youtube-playlist', { body: { url } });
+    if (error || !data?.success || !Array.isArray(data.videos) || data.videos.length === 0) {
+      console.error('Playlist fetch error:', error || data?.error);
+      return null;
+    }
+    return {
+      title: data.title,
+      videos: data.videos.map((v: any) => ({
+        title: v.title,
+        url: v.url,
+        thumbnailUrl: v.thumbnailUrl,
+        description: v.author ? `by ${v.author}` : '',
+      })),
+    };
+  } catch (err) {
+    console.error('Playlist fetch exception:', err);
+    return null;
+  }
+};
+
 // Fetch YouTube video details using oEmbed API
 const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
   try {
@@ -281,8 +317,6 @@ export const api = {
   },
 
   addPlaylist: async (skillId: string, playlistUrl: string): Promise<Playlist | null> => {
-    const details = await fetchUrlDetails(playlistUrl);
-
     // Get current max position
     const { data: existingPlaylists } = await supabase
       .from('playlists')
@@ -291,9 +325,48 @@ export const api = {
       .order('position', { ascending: false })
       .limit(1);
 
-    const nextPosition = existingPlaylists && existingPlaylists.length > 0 
-      ? existingPlaylists[0].position + 1 
+    const startPosition = existingPlaylists && existingPlaylists.length > 0
+      ? existingPlaylists[0].position + 1
       : 0;
+
+    // If this is a YouTube playlist URL, expand it into individual video rows
+    if (isYouTubePlaylistUrl(playlistUrl)) {
+      const expanded = await fetchYouTubePlaylistVideos(playlistUrl);
+      if (expanded && expanded.videos.length > 0) {
+        const rows = expanded.videos.map((v, idx) => ({
+          skill_id: skillId,
+          title: v.title,
+          url: v.url,
+          thumbnail_url: v.thumbnailUrl,
+          description: v.description,
+          position: startPosition + idx,
+        }));
+
+        const { data: inserted, error: insertError } = await supabase
+          .from('playlists')
+          .insert(rows)
+          .select();
+
+        if (insertError) {
+          console.error('Error inserting playlist videos:', insertError);
+          return null;
+        }
+        const first = inserted?.[0];
+        if (!first) return null;
+        return {
+          id: first.id,
+          title: first.title,
+          url: first.url,
+          thumbnailUrl: first.thumbnail_url,
+          description: first.description,
+          position: first.position,
+          isCompleted: first.is_completed,
+        };
+      }
+      // Fall through to single-row insert if expansion failed
+    }
+
+    const details = await fetchUrlDetails(playlistUrl);
 
     const { data: playlist, error } = await supabase
       .from('playlists')
@@ -303,7 +376,7 @@ export const api = {
         url: playlistUrl,
         thumbnail_url: details.thumbnailUrl,
         description: details.description,
-        position: nextPosition,
+        position: startPosition,
       })
       .select()
       .single();
