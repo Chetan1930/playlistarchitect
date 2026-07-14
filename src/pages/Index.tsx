@@ -154,42 +154,71 @@ const Index = () => {
               </section>
             )}
 
-            {/* New course from a URL */}
+            {/* Create new course */}
             <section className="mb-14">
-              <div className="rounded-lg border border-border bg-card p-6 sm:p-7">
-                <p className="eyebrow mb-2">New course from a URL</p>
-                <p className="text-xs text-muted-foreground mb-4 flex items-center gap-1.5">
-                  <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
-                  Works with YouTube playlists, videos, and any public webpage.
-                </p>
-                <form
-                  onSubmit={handleQuickConvert}
-                  className="flex flex-col sm:flex-row gap-3"
-                >
-                  <Input
-                    type="url"
-                    value={quickUrl}
-                    onChange={(e) => setQuickUrl(e.target.value)}
-                    placeholder="paste a youtube playlist or video link…"
-                    className="flex-1 h-11 rounded-md bg-background border-border text-sm placeholder:text-muted-foreground/60"
-                    disabled={isConverting}
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isConverting || !quickUrl.trim()}
-                    className="h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
-                  >
-                    {isConverting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Converting…
-                      </span>
-                    ) : (
-                      'Convert to course'
-                    )}
-                  </Button>
-                </form>
+              <div className="rounded-lg border border-border bg-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <p className="eyebrow mb-2">Start a new course</p>
+                  <p className="text-sm text-muted-foreground">
+                    Create a course, then fill it with YouTube playlists to track.
+                  </p>
+                </div>
+                <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium inline-flex items-center gap-1.5 shrink-0">
+                      <Plus className="w-4 h-4" /> Create course
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="font-display text-2xl">New course</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCreateCourse} className="space-y-4 pt-2">
+                      <div className="space-y-1.5">
+                        <label className="text-xs uppercase tracking-wider text-muted-foreground">Course name</label>
+                        <Input
+                          autoFocus
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          placeholder="e.g. Master React in 30 days"
+                          disabled={isCreating}
+                          required
+                          className="h-11"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-xs uppercase tracking-wider text-muted-foreground">Description (optional)</label>
+                        <Textarea
+                          value={newDesc}
+                          onChange={(e) => setNewDesc(e.target.value)}
+                          placeholder="What is this course about?"
+                          disabled={isCreating}
+                          rows={3}
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          type="submit"
+                          disabled={isCreating || !newName.trim()}
+                          className="h-11 px-6 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+                        >
+                          {isCreating ? (
+                            <span className="inline-flex items-center gap-2">
+                              <Loader2 className="w-4 h-4 animate-spin" /> Creating…
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5">
+                              Create <ArrowRight className="w-4 h-4" />
+                            </span>
+                          )}
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
             </section>
+
 
             {/* My library */}
             <section>
