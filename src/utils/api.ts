@@ -33,6 +33,42 @@ const isYouTubeUrl = (url: string): boolean => {
   return url.includes('youtube.com') || url.includes('youtu.be');
 };
 
+// Check if URL is a YouTube playlist URL (has ?list= parameter)
+const isYouTubePlaylistUrl = (url: string): boolean => {
+  try {
+    const u = new URL(url);
+    return isYouTubeUrl(url) && !!u.searchParams.get('list');
+  } catch {
+    return false;
+  }
+};
+
+// Fetch all videos of a YouTube playlist via edge function
+const fetchYouTubePlaylistVideos = async (url: string): Promise<
+  | { title: string; videos: Array<{ title: string; url: string; thumbnailUrl: string; description: string }> }
+  | null
+> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-youtube-playlist', { body: { url } });
+    if (error || !data?.success || !Array.isArray(data.videos) || data.videos.length === 0) {
+      console.error('Playlist fetch error:', error || data?.error);
+      return null;
+    }
+    return {
+      title: data.title,
+      videos: data.videos.map((v: any) => ({
+        title: v.title,
+        url: v.url,
+        thumbnailUrl: v.thumbnailUrl,
+        description: v.author ? `by ${v.author}` : '',
+      })),
+    };
+  } catch (err) {
+    console.error('Playlist fetch exception:', err);
+    return null;
+  }
+};
+
 // Fetch YouTube video details using oEmbed API
 const fetchYouTubeDetails = async (url: string): Promise<{ title: string; thumbnailUrl: string; description: string } | null> => {
   try {
