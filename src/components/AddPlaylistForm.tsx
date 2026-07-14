@@ -42,16 +42,16 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div>
-        <p className="eyebrow mb-1.5">Add a step to this course</p>
+        <p className="eyebrow mb-1.5">Add a YouTube playlist</p>
         <p className="text-xs text-muted-foreground flex items-center gap-1.5">
           <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground" />
-          YouTube playlist, video, or any public webpage.
+          Paste a playlist link — every video is added as a trackable step.
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-2.5">
         <Input
           type="url"
-          placeholder="paste a youtube playlist or video link…"
+          placeholder="https://www.youtube.com/playlist?list=…"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           className="flex-1 h-11 rounded-md bg-background border-border text-sm placeholder:text-muted-foreground/60"
@@ -65,13 +65,16 @@ const AddPlaylistForm = ({ skillId, onSuccess }: AddPlaylistFormProps) => {
         >
           {isLoading ? (
             <span className="inline-flex items-center gap-2">
-              <Loader2 className="w-4 h-4 animate-spin" /> Adding…
+              <Loader2 className="w-4 h-4 animate-spin" /> Importing…
             </span>
           ) : (
-            'Add step'
+            'Import playlist'
           )}
         </Button>
       </div>
+      <p className="text-[11px] text-muted-foreground/80">
+        Also accepts a single YouTube video or any public webpage link.
+      </p>
     </form>
   );
 };
