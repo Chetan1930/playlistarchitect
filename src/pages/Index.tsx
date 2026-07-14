@@ -24,8 +24,10 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const [quickUrl, setQuickUrl] = useState('');
-  const [isConverting, setIsConverting] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const { data: skills = [], isLoading, refetch } = useQuery({
     queryKey: ['skills', user?.id],
@@ -57,35 +59,24 @@ const Index = () => {
   const totalCount = todaysLesson?.playlists.length ?? 0;
   const percent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  const handleQuickConvert = async (e: React.FormEvent) => {
+  const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = quickUrl.trim();
-    if (!url) return;
-    setIsConverting(true);
+    const name = newName.trim();
+    if (!name) return;
+    setIsCreating(true);
     try {
-      // Derive a working title from the URL host
-      let name = 'New course';
-      try {
-        const host = new URL(url).hostname.replace(/^www\./, '');
-        const stem = host.split('.')[0];
-        name = stem.charAt(0).toUpperCase() + stem.slice(1) + ' course';
-      } catch {
-        /* fall back to default */
-      }
-
-      const skill = await api.createSkill(name, 'Imported from a link');
-      const added = await api.addPlaylist(skill.id, url);
-      if (!added) throw new Error('Failed to import link');
-
+      const skill = await api.createSkill(name, newDesc.trim());
       toast.success('Course created');
-      setQuickUrl('');
+      setNewName('');
+      setNewDesc('');
+      setCreateOpen(false);
       refetch();
       navigate(`/skill/${skill.id}`);
     } catch (err) {
       console.error(err);
-      toast.error('Could not convert that link. Please try again.');
+      toast.error('Could not create course. Please try again.');
     } finally {
-      setIsConverting(false);
+      setIsCreating(false);
     }
   };
 
