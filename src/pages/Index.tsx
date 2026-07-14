@@ -8,8 +8,10 @@ import { invitationApi } from '@/utils/invitationApi';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { ArrowRight, Loader2, Sparkles, Plus } from 'lucide-react';
 
 /**
  * Youdemy-inspired dashboard:
