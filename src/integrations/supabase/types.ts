@@ -121,6 +121,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "skill_invitations_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "user_display_info"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "skill_invitations_skill_id_fkey"
             columns: ["skill_id"]
             isOneToOne: false
@@ -159,6 +166,13 @@ export type Database = {
             referencedRelation: "skills"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "skill_shares_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_display_info"
+            referencedColumns: ["id"]
+          },
         ]
       }
       skills: {
@@ -193,7 +207,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_display_info: {
+        Row: {
+          display_name: string | null
+          email: string | null
+          id: string | null
+        }
+        Insert: {
+          display_name?: never
+          email?: string | null
+          id?: string | null
+        }
+        Update: {
+          display_name?: never
+          email?: string | null
+          id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_received_invitations_enriched: {
