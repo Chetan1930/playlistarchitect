@@ -22,49 +22,39 @@ function extractPlaylistId(url: string): string | null {
   }
 }
 
+function unescapeJson(s: string): string {
+  try { return JSON.parse('"' + s + '"'); } catch { return s; }
+}
+
 // Parse ytInitialData JSON blob from YouTube playlist HTML
 function parseVideos(html: string): { title: string; videos: VideoItem[] } {
-  // Extract playlist title
   let playlistTitle = 'YouTube Playlist';
   const ogTitle = html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
   if (ogTitle) playlistTitle = ogTitle[1];
 
   const videos: VideoItem[] = [];
   const seen = new Set<string>();
-
-  // Approach 1: regex over the ytInitialData playlistVideoRenderer entries.
-  const rendererRegex = /"playlistVideoRenderer":\s*\{([\s\S]*?)"trackingParams"/g;
-  let match;
   let position = 0;
-  while ((match = rendererRegex.exec(html)) !== null) {
-    const chunk = match[1];
-    const idMatch = chunk.match(/"videoId":"([^"]+)"/);
-    if (!idMatch) continue;
+
+  // New YouTube layout: lockupViewModel blocks containing a videoId + lockupMetadataViewModel.title.content
+  const lockupRegex = /"lockupViewModel":\{"contentImage":\{"thumbnailViewModel"[\s\S]*?"metadata":\{"lockupMetadataViewModel":\{"title":\{"content":"((?:[^"\\]|\\.)*)"/g;
+  // Also need videoId for each; capture within same chunk
+  const blockRegex = /"lockupViewModel":\{([\s\S]*?)"rendererContext":\{[\s\S]*?\}\}\}/g;
+
+  // Simpler: iterate metadata occurrences and pair with nearest preceding videoId in the same lockup block
+  const lockupSplits = html.split('"lockupViewModel":{');
+  for (let i = 1; i < lockupSplits.length; i++) {
+    const chunk = lockupSplits[i].slice(0, 8000);
+    const idMatch = chunk.match(/"videoId":"([a-zA-Z0-9_-]{6,})"/);
+    const titleMatch = chunk.match(/"lockupMetadataViewModel":\{"title":\{"content":"((?:[^"\\]|\\.)*)"/);
+    if (!idMatch || !titleMatch) continue;
     const videoId = idMatch[1];
     if (seen.has(videoId)) continue;
+    const title = unescapeJson(titleMatch[1]) || 'Untitled video';
 
-    // Title lives at title.runs[0].text or title.simpleText
-    let title = '';
-    const runMatch = chunk.match(/"title":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"((?:[^"\\]|\\.)*)"/);
-    if (runMatch) {
-      title = runMatch[1];
-    } else {
-      const simpleMatch = chunk.match(/"title":\s*\{[^}]*"simpleText":\s*"((?:[^"\\]|\\.)*)"/);
-      if (simpleMatch) title = simpleMatch[1];
-    }
-    // Unescape JSON escapes
-    try {
-      title = JSON.parse('"' + title + '"');
-    } catch {
-      /* keep raw */
-    }
-    if (!title) title = 'Untitled video';
-
-    const authorMatch = chunk.match(/"shortBylineText":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"((?:[^"\\]|\\.)*)"/);
     let author = '';
-    if (authorMatch) {
-      try { author = JSON.parse('"' + authorMatch[1] + '"'); } catch { author = authorMatch[1]; }
-    }
+    const authorMatch = chunk.match(/"metadataParts":\[\{"text":\{"content":"((?:[^"\\]|\\.)*)"/);
+    if (authorMatch) author = unescapeJson(authorMatch[1]);
 
     videos.push({
       videoId,
@@ -76,6 +66,35 @@ function parseVideos(html: string): { title: string; videos: VideoItem[] } {
     });
     seen.add(videoId);
     position++;
+  }
+
+  // Fallback: legacy playlistVideoRenderer
+  if (videos.length === 0) {
+    const rendererRegex = /"playlistVideoRenderer":\s*\{([\s\S]*?)"trackingParams"/g;
+    let match;
+    while ((match = rendererRegex.exec(html)) !== null) {
+      const chunk = match[1];
+      const idMatch = chunk.match(/"videoId":"([^"]+)"/);
+      if (!idMatch) continue;
+      const videoId = idMatch[1];
+      if (seen.has(videoId)) continue;
+      let title = '';
+      const runMatch = chunk.match(/"title":\s*\{\s*"runs":\s*\[\s*\{\s*"text":\s*"((?:[^"\\]|\\.)*)"/);
+      if (runMatch) title = unescapeJson(runMatch[1]);
+      else {
+        const simpleMatch = chunk.match(/"title":\s*\{[^}]*"simpleText":\s*"((?:[^"\\]|\\.)*)"/);
+        if (simpleMatch) title = unescapeJson(simpleMatch[1]);
+      }
+      videos.push({
+        videoId,
+        title: title || 'Untitled video',
+        url: `https://www.youtube.com/watch?v=${videoId}`,
+        thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        position,
+      });
+      seen.add(videoId);
+      position++;
+    }
   }
 
   return { title: playlistTitle, videos };
