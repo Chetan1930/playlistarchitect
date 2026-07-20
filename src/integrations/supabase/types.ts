@@ -91,6 +91,30 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       skill_invitations: {
         Row: {
           access_level: string
@@ -120,13 +144,6 @@ export type Database = {
           status?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "skill_invitations_inviter_id_fkey"
-            columns: ["inviter_id"]
-            isOneToOne: false
-            referencedRelation: "user_display_info"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "skill_invitations_skill_id_fkey"
             columns: ["skill_id"]
@@ -166,13 +183,6 @@ export type Database = {
             referencedRelation: "skills"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "skill_shares_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_display_info"
-            referencedColumns: ["id"]
-          },
         ]
       }
       skills: {
@@ -207,24 +217,7 @@ export type Database = {
       }
     }
     Views: {
-      user_display_info: {
-        Row: {
-          display_name: string | null
-          email: string | null
-          id: string | null
-        }
-        Insert: {
-          display_name?: never
-          email?: string | null
-          id?: string | null
-        }
-        Update: {
-          display_name?: never
-          email?: string | null
-          id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       get_received_invitations_enriched: {
