@@ -46,9 +46,6 @@ const Header = () => {
           className="flex items-center gap-2.5 group"
           onClick={() => setMobileOpen(false)}
         >
-          <span className="w-8 h-8 rounded-lg border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-display text-lg leading-none">
-            §
-          </span>
           <span className="font-display italic text-lg sm:text-xl text-foreground group-hover:text-primary transition-colors">
             SkillUp
           </span>
@@ -127,9 +124,6 @@ const Header = () => {
               <div className="flex flex-col h-full">
                 <div className="p-6 border-b border-border">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-9 h-9 rounded-lg border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-display text-xl">
-                      §
-                    </span>
                     <span className="font-display italic text-xl text-foreground">SkillUp</span>
                   </div>
                 </div>
